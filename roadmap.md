@@ -9,7 +9,7 @@
 - [x] Corrigir a tela "Adicionar receita", que abria com erro
 
 ## A fazer
-- [ ] Conferir de ponta a ponta: colar receita → organizar → salvar → ver em "Minhas receitas" → remover
+- [x] Conferir de ponta a ponta: colar receita → organizar → salvar → ver em "Minhas receitas" → remover
 - [ ] Favoritos
 - [ ] Leitura das etapas em voz alta
 - [ ] Corrigir categorias erradas (ex.: "Paella vegetariana" aparece em Doces e sobremesas)
