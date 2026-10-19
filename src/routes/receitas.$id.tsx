@@ -35,8 +35,8 @@ function Detalhe() {
             <p className="text-lg text-muted-foreground">{r.categoria}</p>
             <h1 className="font-display text-3xl font-bold md:text-4xl">{r.nome}</h1>
             {r.imagem && <img src={r.imagem} alt={r.nome} className="mt-6 max-h-[28rem] w-full rounded-2xl object-cover shadow-soft" />}
-            <div className="mt-8 space-y-4 rounded-2xl border border-border bg-card p-6 md:p-8">
-              {r.texto.split("\n\n").map((p, i) =>
+            <div className="mt-8 space-y-3 rounded-2xl border border-border bg-card p-6 md:p-8">
+              {r.texto.split("\n").map((p, i) =>
                 ehTitulo(p) ? (
                   <h2 key={i} className="pt-4 font-display text-2xl font-semibold text-primary first:pt-0">{p.replace(/:$/, "")}</h2>
                 ) : (
