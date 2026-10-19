@@ -16,11 +16,6 @@ dist-ssr
 .nitro
 *.local
 
-# Local environment files must never be committed; the example contains placeholders only.
-.env
-.env.*
-!.env.example
-
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
