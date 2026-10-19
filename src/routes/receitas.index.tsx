@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Search, Loader2, UtensilsCrossed } from "lucide-react";
+import { Search, Loader2, UtensilsCrossed, BookPlus, X, ChevronDown } from "lucide-react";
 import { Cabecalho } from "@/components/Cabecalho";
 import { receitasQuery, normalizar } from "@/lib/receitas";
 
@@ -9,7 +9,10 @@ export const Route = createFileRoute("/receitas/")({
   head: () => ({
     meta: [
       { title: "Receitas — Saborê" },
-      { name: "description", content: "Mais de 500 receitas caseiras: bolos, doces, pães, carnes, acompanhamentos e mais." },
+      {
+        name: "description",
+        content: "Mais de 500 receitas caseiras: bolos, doces, pães, carnes, acompanhamentos e mais.",
+      },
       { property: "og:title", content: "Receitas — Saborê" },
       { property: "og:description", content: "Mais de 500 receitas caseiras organizadas por categoria." },
       { property: "og:type", content: "website" },
@@ -21,57 +24,171 @@ export const Route = createFileRoute("/receitas/")({
 
 const POR_PAGINA = 24;
 
-function Lista() {
+export function Lista() {
   const { data, isLoading, isError } = useQuery(receitasQuery);
   const [busca, setBusca] = useState("");
   const [cat, setCat] = useState("Todas");
+  const [aberto, setAberto] = useState(false);
   const [qtd, setQtd] = useState(POR_PAGINA);
 
   const categorias = useMemo(() => ["Todas", ...new Set((data ?? []).map((r) => r.categoria))], [data]);
+
+  const contagem = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const r of data ?? []) m.set(r.categoria, (m.get(r.categoria) ?? 0) + 1);
+    return m;
+  }, [data]);
+
   const filtradas = useMemo(() => {
     const q = normalizar(busca.trim());
-    return (data ?? []).filter(
-      (r) => (cat === "Todas" || r.categoria === cat) && (!q || normalizar(r.nome + " " + r.texto).includes(q)),
-    ).sort((a, b) => Number(!!b.imagem) - Number(!!a.imagem));
+    return (data ?? [])
+      .filter(
+        (r) => (cat === "Todas" || r.categoria === cat) && (!q || normalizar(r.nome + " " + r.texto).includes(q)),
+      )
+      .sort((a, b) => Number(!!b.imagem) - Number(!!a.imagem));
   }, [data, busca, cat]);
+
+  const trocar = (c: string) => {
+    setCat(c);
+    setQtd(POR_PAGINA);
+    setAberto(false);
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Cabecalho />
       <main className="mx-auto max-w-5xl px-5 py-10">
-        <h1 className="font-display text-3xl font-bold md:text-4xl">Receitas</h1>
-        <label htmlFor="busca" className="mt-6 block text-lg font-semibold">Procurar receita ou ingrediente</label>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="font-display text-3xl font-bold md:text-4xl">Receitas</h1>
+            <p className="mt-2 text-lg text-muted-foreground">
+              Escolha uma categoria ou procure por um ingrediente.
+            </p>
+          </div>
+          <Link to="/nova-receita" className="btn-secondary h-14">
+            <BookPlus className="h-5 w-5" aria-hidden />
+            Adicionar receita
+          </Link>
+        </div>
+
+        <label htmlFor="busca" className="mt-8 block text-lg font-semibold">
+          Procurar receita ou ingrediente
+        </label>
         <div className="relative mt-2">
           <Search className="absolute left-5 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground" aria-hidden />
           <input
-            id="busca" value={busca}
-            onChange={(e) => { setBusca(e.target.value); setQtd(POR_PAGINA); }}
+            id="busca"
+            value={busca}
+            onChange={(e) => {
+              setBusca(e.target.value);
+              setQtd(POR_PAGINA);
+            }}
             placeholder="Ex.: bolo de cenoura, frango, coco"
-            className="h-16 w-full rounded-xl border-2 border-input bg-card pl-14 pr-5 text-xl outline-none focus:border-primary"
+            className="h-16 w-full rounded-xl border-2 border-input bg-card pl-14 pr-14 text-xl outline-none focus:border-primary"
           />
-        </div>
-        <div className="mt-5 flex flex-wrap gap-2" role="group" aria-label="Categorias">
-          {categorias.map((c) => (
-            <button key={c} onClick={() => { setCat(c); setQtd(POR_PAGINA); }} aria-pressed={cat === c}
-              className={cat === c ? "chip border-primary bg-primary text-primary-foreground hover:bg-primary" : "chip"}>
-              {c}
+          {busca && (
+            <button
+              type="button"
+              onClick={() => setBusca("")}
+              aria-label="Limpar a busca"
+              className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-2 text-muted-foreground hover:bg-secondary"
+            >
+              <X className="h-6 w-6" aria-hidden />
             </button>
-          ))}
+          )}
         </div>
 
-        {isLoading && <p className="mt-10 flex items-center gap-3 text-lg"><Loader2 className="h-6 w-6 animate-spin" /> Carregando receitas...</p>}
+        <section className="mt-6 rounded-2xl border border-border bg-card" aria-label="Filtro por categoria">
+          <div className="flex flex-wrap items-center gap-2 p-3 sm:p-4">
+            <button
+              type="button"
+              onClick={() => setAberto((a) => !a)}
+              aria-expanded={aberto}
+              aria-controls="painel-categorias"
+              className="flex flex-1 items-center justify-between gap-3 rounded-xl px-2 py-2 text-left hover:bg-secondary"
+            >
+              <span className="flex flex-wrap items-center gap-2">
+                <span className="font-display text-xl font-semibold">Categorias</span>
+                {cat !== "Todas" && (
+                  <span className="rounded-full bg-primary px-3 py-1 text-sm font-semibold text-primary-foreground">
+                    {cat}
+                  </span>
+                )}
+              </span>
+              <ChevronDown
+                className={`h-6 w-6 shrink-0 text-muted-foreground transition-transform ${aberto ? "rotate-180" : ""}`}
+                aria-hidden
+              />
+            </button>
+            {cat !== "Todas" && (
+              <button
+                type="button"
+                onClick={() => trocar("Todas")}
+                className="inline-flex items-center gap-2 rounded-full border-2 border-border px-4 py-1.5 text-base font-semibold text-muted-foreground hover:border-primary hover:text-primary"
+              >
+                <X className="h-4 w-4" aria-hidden /> Ver todas
+              </button>
+            )}
+          </div>
+          {aberto && (
+            <div id="painel-categorias" className="border-t border-border p-4 sm:p-5">
+              <div className="flex flex-wrap gap-2.5" role="group" aria-label="Escolher categoria">
+                {categorias.map((c) => {
+                  const ativo = cat === c;
+                  const n = c === "Todas" ? (data?.length ?? 0) : (contagem.get(c) ?? 0);
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => trocar(c)}
+                      aria-pressed={ativo}
+                      className={`inline-flex min-h-12 items-center gap-2 rounded-full border-2 px-4 text-base font-semibold transition-colors ${
+                        ativo
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-background text-foreground hover:border-primary hover:bg-secondary"
+                      }`}
+                    >
+                      {c}
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-sm tabular-nums ${
+                          ativo ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        {n}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </section>
+
+        {isLoading && (
+          <p className="mt-10 flex items-center gap-3 text-lg">
+            <Loader2 className="h-6 w-6 animate-spin" aria-hidden /> Carregando receitas...
+          </p>
+        )}
         {isError && <p className="mt-10 text-lg text-destructive">Não foi possível carregar as receitas. Recarregue a página.</p>}
         {data && (
           <>
-            <p className="mt-8 text-lg text-muted-foreground" aria-live="polite">{filtradas.length} receitas encontradas</p>
+            <p className="mt-8 text-lg text-muted-foreground" aria-live="polite">
+              {filtradas.length} {filtradas.length === 1 ? "receita encontrada" : "receitas encontradas"}
+            </p>
             <ul className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {filtradas.slice(0, qtd).map((r) => (
                 <li key={r.id}>
-                  <Link to="/receitas/$id" params={{ id: r.id }} className="block h-full overflow-hidden rounded-2xl border border-border bg-card shadow-soft transition hover:border-primary">
+                  <Link
+                    to="/receitas/$id"
+                    params={{ id: r.id }}
+                    className="block h-full overflow-hidden rounded-2xl border border-border bg-card shadow-soft transition hover:border-primary"
+                  >
                     {r.imagem ? (
                       <img src={r.imagem} alt={r.nome} loading="lazy" className="aspect-[4/3] w-full object-cover" />
                     ) : (
-                      <div className="flex aspect-[4/3] items-center justify-center bg-secondary"><UtensilsCrossed className="h-12 w-12 text-primary" aria-hidden /></div>
+                      <div className="flex aspect-[4/3] items-center justify-center bg-secondary">
+                        <UtensilsCrossed className="h-12 w-12 text-primary" aria-hidden />
+                      </div>
                     )}
                     <div className="p-5">
                       <p className="text-base text-muted-foreground">{r.categoria}</p>
@@ -83,7 +200,9 @@ function Lista() {
             </ul>
             {qtd < filtradas.length && (
               <div className="mt-8 text-center">
-                <button className="btn-secondary h-16" onClick={() => setQtd((n) => n + POR_PAGINA)}>Mostrar mais receitas</button>
+                <button className="btn-secondary h-16" onClick={() => setQtd((n) => n + POR_PAGINA)}>
+                  Mostrar mais receitas
+                </button>
               </div>
             )}
           </>
