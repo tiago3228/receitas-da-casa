@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, navigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Cabecalho } from "@/components/Cabecalho";
@@ -21,6 +21,7 @@ export const Route = createFileRoute("/reset-password")({
 const CAMPO = "h-14 w-full rounded-xl border-2 border-input bg-card px-4 text-lg outline-none focus:border-primary";
 
 function SenhaNova() {
+  const irPara = useNavigate();
   const [pronto, setPronto] = useState(false);
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
@@ -29,15 +30,14 @@ function SenhaNova() {
   useEffect(() => {
     // O link do e-mail chega com type=recovery no endereço; sem isso não podemos trocar a senha.
     const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
-    const { data } = supabase.auth.getSession().then(() => undefined);
-    void data;
     if (hash.get("type") === "recovery") {
       setPronto(true);
       return;
     }
-    supabase.auth.onAuthStateChange((evento) => {
+    const { data } = supabase.auth.onAuthStateChange((evento) => {
       if (evento === "PASSWORD_RECOVERY") setPronto(true);
     });
+    return () => data.subscription.unsubscribe();
   }, []);
 
   const enviar = async (evento: React.FormEvent) => {
@@ -54,7 +54,7 @@ function SenhaNova() {
       setErro("Não foi possível trocar a senha. Abra de novo o link que enviamos para o seu e-mail.");
       return;
     }
-    navigate({ to: "/minhas-receitas", replace: true });
+    irPara({ to: "/minhas-receitas", replace: true });
   };
 
   return (

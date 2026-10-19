@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute, Link, navigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ChefHat, Loader2, MailCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Cabecalho } from "@/components/Cabecalho";
@@ -15,9 +15,10 @@ export const Route = createFileRoute("/auth")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  validateSearch: (search: Record<string, unknown>): { redirect?: string } => ({
-    redirect: typeof search.redirect === "string" && search.redirect.startsWith("/") ? search.redirect : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
+    const r = typeof search["redirect"] === "string" && search["redirect"].startsWith("/") ? search["redirect"] : "";
+    return r ? { redirect: r } : {};
+  },
   component: Entrar,
 });
 
@@ -26,6 +27,7 @@ const CAMPO =
 
 function Entrar() {
   const { redirect } = Route.useSearch();
+  const irPara = useNavigate();
   const [criando, setCriando] = useState(false);
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
@@ -37,7 +39,7 @@ function Entrar() {
 
   const destino = () => {
     const para = redirect === "/nova-receita" ? "/nova-receita" : "/minhas-receitas";
-    navigate({ to: para, replace: true });
+    irPara({ to: para, replace: true });
   };
 
   const enviar = async (evento: React.FormEvent) => {
