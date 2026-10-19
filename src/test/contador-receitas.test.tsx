@@ -45,7 +45,8 @@ describe("Contador de receitas no topo", () => {
     );
 
     const selo = await screen.findByLabelText(new RegExp(`^${catalogo.length} receitas no app$`));
-    expect(selo).toHaveTextContent(`${catalogo.length} receitas`);
+    // O número sobe de 0 até o total, então damos tempo para a animação terminar.
+    await waitFor(() => expect(selo).toHaveTextContent(`${catalogo.length} receitas`), { timeout: 3000 });
   });
 
   it("o caderno continua com mais de 500 receitas", () => {
@@ -65,6 +66,8 @@ describe("Contador de receitas no topo", () => {
       </QueryClientProvider>,
     );
 
-    await waitFor(() => expect(screen.getByLabelText("1 receita no app")).toHaveTextContent("1 receita"));
+    await waitFor(() => expect(screen.getByLabelText("1 receita no app")).toHaveTextContent("1 receita"), {
+      timeout: 3000,
+    });
   });
 });
