@@ -14,7 +14,77 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          criado_em: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          criado_em?: string
+          id: string
+          nome?: string
+        }
+        Update: {
+          criado_em?: string
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
+      receitas_autorais: {
+        Row: {
+          atualizado_em: string
+          categoria: string
+          criado_em: string
+          id: string
+          ingredientes: string
+          modo_de_preparo: string
+          observacoes: string
+          rendimento: string
+          tempo: string
+          texto_original: string
+          titulo: string
+          user_id: string
+        }
+        Insert: {
+          atualizado_em?: string
+          categoria?: string
+          criado_em?: string
+          id?: string
+          ingredientes?: string
+          modo_de_preparo?: string
+          observacoes?: string
+          rendimento?: string
+          tempo?: string
+          texto_original?: string
+          titulo: string
+          user_id: string
+        }
+        Update: {
+          atualizado_em?: string
+          categoria?: string
+          criado_em?: string
+          id?: string
+          ingredientes?: string
+          modo_de_preparo?: string
+          observacoes?: string
+          rendimento?: string
+          tempo?: string
+          texto_original?: string
+          titulo?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receitas_autorais_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
