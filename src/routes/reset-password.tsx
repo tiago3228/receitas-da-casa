@@ -19,7 +19,6 @@ export const Route = createFileRoute("/reset-password")({
   component: SenhaNova,
 });
 
-const CAMPO = "h-14 w-full rounded-xl border-2 border-input bg-card px-4 text-lg outline-none focus:border-primary";
 
 function SenhaNova() {
   const irPara = useNavigate();
