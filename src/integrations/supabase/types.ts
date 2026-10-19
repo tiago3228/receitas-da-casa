@@ -14,24 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      profiles: {
-        Row: {
-          criado_em: string
-          id: string
-          nome: string
-        }
-        Insert: {
-          criado_em?: string
-          id: string
-          nome?: string
-        }
-        Update: {
-          criado_em?: string
-          id?: string
-          nome?: string
-        }
-        Relationships: []
-      }
       favoritos_receitas: {
         Row: {
           criado_em: string
@@ -77,6 +59,24 @@ export type Database = {
           receita_id?: string | null
           receita_nome?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          criado_em: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          criado_em?: string
+          id: string
+          nome?: string
+        }
+        Update: {
+          criado_em?: string
+          id?: string
+          nome?: string
         }
         Relationships: []
       }
