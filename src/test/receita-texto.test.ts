@@ -1,7 +1,13 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { extrairIngredientes, extrairModoDePreparo, quebrarEmFrases } from "@/lib/receita-texto";
+import {
+  detectarDuracaoSegundos,
+  extrairEtapas,
+  extrairIngredientes,
+  extrairModoDePreparo,
+  quebrarEmFrases,
+} from "@/lib/receita-texto";
 
 const catalogo = JSON.parse(
   readFileSync(resolve(process.cwd(), "public/receitas.json"), "utf8"),
@@ -66,5 +72,26 @@ Sirva frio.`;
       "Misture bem.",
       "Leve ao forno por 30 minutos.",
     ]);
+  });
+
+  it("mantém etapas numeradas individualmente e divide somente em limites de frase", () => {
+    expect(extrairEtapas("1. Misture os ingredientes.\n2. Asse até dourar.")).toEqual([
+      "Misture os ingredientes.",
+      "Asse até dourar.",
+    ]);
+    expect(extrairEtapas("Misture bem.\nLeve ao forno por 30 minutos.")).toEqual([
+      "Misture bem.",
+      "Leve ao forno por 30 minutos.",
+    ]);
+  });
+
+  it("detecta temporizador só para duração simples e explícita", () => {
+    expect(detectarDuracaoSegundos("Asse por 30 minutos.")).toBe(1_800);
+    expect(detectarDuracaoSegundos("Deixe descansar por 15 segundos.")).toBe(15);
+    expect(detectarDuracaoSegundos("Asse por 30 a 35 minutos.")).toBeUndefined();
+    expect(
+      detectarDuracaoSegundos("Asse por 30 minutos e descanse por 10 minutos."),
+    ).toBeUndefined();
+    expect(detectarDuracaoSegundos("Asse até dourar.")).toBeUndefined();
   });
 });

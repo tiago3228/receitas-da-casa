@@ -1,5 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Outlet, createRootRoute, createRoute, createRouter, RouterProvider } from "@tanstack/react-router";
+import {
+  Outlet,
+  createRootRoute,
+  createRoute,
+  createRouter,
+  RouterProvider,
+} from "@tanstack/react-router";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -7,9 +13,21 @@ import { Lista } from "@/routes/receitas.index";
 
 // Catálogo pequeno e controlado: duas categorias, para conferir o filtro.
 const catalogo = [
-  { id: "1", nome: "Bolo de cenoura", categoria: "Bolos, tortas e cupcakes", imagem: null, texto: "cenoura" },
+  {
+    id: "1",
+    nome: "Bolo de cenoura",
+    categoria: "Bolos, tortas doces e cupcakes",
+    imagem: null,
+    texto: "cenoura",
+  },
   { id: "2", nome: "Suco de laranja", categoria: "Bebidas", imagem: null, texto: "laranja" },
-  { id: "3", nome: "Torta de frango", categoria: "Bolos, tortas e cupcakes", imagem: null, texto: "frango" },
+  {
+    id: "3",
+    nome: "Torta de frango",
+    categoria: "Bolos, tortas doces e cupcakes",
+    imagem: null,
+    texto: "frango",
+  },
 ];
 
 const rootRoute = createRootRoute({ component: () => <Outlet /> });

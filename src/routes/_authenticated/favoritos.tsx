@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Heart, Loader2, Trash2, UtensilsCrossed } from "lucide-react";
+import { ArrowLeft, Heart, Loader2, Trash2 } from "lucide-react";
 import { Cabecalho } from "@/components/Cabecalho";
+import { ImagemReceita } from "@/components/ImagemReceita";
 import { useFavoritos } from "@/lib/dados-pessoais";
 import { receitasQuery } from "@/lib/receitas";
 
@@ -20,9 +21,18 @@ export const Route = createFileRoute("/_authenticated/favoritos")({
 });
 
 function Favoritos() {
-  const { ids, carregando: carregandoFavoritos, erro, alternar, removendo } = useFavoritos();
-  const { data: receitas, isLoading: carregandoReceitas } = useQuery(receitasQuery);
-  const salvas = (receitas ?? []).filter((receita) => ids.includes(receita.id));
+  const { ids, carregando: carregandoFavoritos, erro, removerVarios, removendo } = useFavoritos();
+  const {
+    data: receitas,
+    isLoading: carregandoReceitas,
+    isError: erroReceitas,
+  } = useQuery(receitasQuery);
+  const salvas = (receitas ?? []).flatMap((receita) => {
+    const idsFavoritos = ids.filter(
+      (id) => id === receita.id || (receita.aliases ?? []).includes(id),
+    );
+    return idsFavoritos.length ? [{ receita, idsFavoritos }] : [];
+  });
   const carregando = carregandoFavoritos || carregandoReceitas;
 
   return (
@@ -55,7 +65,15 @@ function Favoritos() {
             <Loader2 className="h-6 w-6 animate-spin" aria-hidden /> Carregando seus favoritos...
           </p>
         )}
-        {!carregando && !erro && salvas.length === 0 && (
+        {erroReceitas && (
+          <p
+            className="mt-6 rounded-xl border-2 border-destructive p-4 text-lg text-destructive"
+            role="alert"
+          >
+            Não foi possível carregar o catálogo de receitas. Tente novamente.
+          </p>
+        )}
+        {!carregando && !erro && !erroReceitas && salvas.length === 0 && (
           <div className="mt-10 rounded-2xl border-2 border-dashed border-border bg-card p-8 text-center">
             <Heart className="mx-auto h-12 w-12 text-primary" aria-hidden />
             <h2 className="mt-4 font-display text-2xl font-semibold">Sua lista ainda está vazia</h2>
@@ -69,24 +87,13 @@ function Favoritos() {
         )}
 
         <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {salvas.map((receita) => (
+          {salvas.map(({ receita, idsFavoritos }) => (
             <li
               key={receita.id}
               className="overflow-hidden rounded-2xl border border-border bg-card shadow-soft"
             >
               <Link to="/receitas/$id" params={{ id: receita.id }} className="block">
-                {receita.imagem ? (
-                  <img
-                    src={receita.imagem}
-                    alt={receita.nome}
-                    loading="lazy"
-                    className="aspect-[4/3] w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex aspect-[4/3] items-center justify-center bg-secondary">
-                    <UtensilsCrossed className="h-12 w-12 text-primary" aria-hidden />
-                  </div>
-                )}
+                <ImagemReceita src={receita.imagem} alt={receita.nome} />
                 <div className="p-5 pb-2">
                   <p className="text-base text-muted-foreground">{receita.categoria}</p>
                   <h2 className="mt-1 font-display text-xl font-semibold">{receita.nome}</h2>
@@ -95,7 +102,7 @@ function Favoritos() {
               <div className="px-5 pb-5">
                 <button
                   type="button"
-                  onClick={() => alternar(receita.id)}
+                  onClick={() => removerVarios(idsFavoritos)}
                   disabled={removendo}
                   className="inline-flex min-h-12 items-center gap-2 rounded-xl border-2 border-border px-4 font-semibold text-destructive hover:border-destructive disabled:opacity-60"
                 >

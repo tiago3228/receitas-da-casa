@@ -62,14 +62,42 @@ export function useFavoritos() {
     },
     onSettled: () => cache.invalidateQueries({ queryKey }),
   });
+  const removerVarios = useMutation({
+    mutationFn: async (receitaIds: string[]) => {
+      if (!idUsuario) throw new Error("Entre na sua conta para alterar favoritos.");
+      const idsUnicos = [...new Set(receitaIds)];
+      if (!idsUnicos.length) return;
+      const { error } = await supabase
+        .from("favoritos_receitas")
+        .delete()
+        .eq("user_id", idUsuario)
+        .in("receita_id", idsUnicos);
+      if (error) throw error;
+    },
+    onMutate: async (receitaIds) => {
+      await cache.cancelQueries({ queryKey });
+      const anterior = cache.getQueryData<string[]>(queryKey) ?? [];
+      const idsRemover = new Set(receitaIds);
+      cache.setQueryData<string[]>(
+        queryKey,
+        anterior.filter((id) => !idsRemover.has(id)),
+      );
+      return anterior;
+    },
+    onError: (_erro, _receitaIds, anterior) => {
+      if (anterior) cache.setQueryData(queryKey, anterior);
+    },
+    onSettled: () => cache.invalidateQueries({ queryKey }),
+  });
   return {
     idUsuario,
     carregandoSessao,
     ids: consulta.data ?? [],
     carregando: consulta.isLoading,
-    erro: consulta.error ?? alternar.error,
+    erro: consulta.error ?? alternar.error ?? removerVarios.error,
     alternar: alternar.mutate,
-    removendo: alternar.isPending,
+    removerVarios: removerVarios.mutate,
+    removendo: alternar.isPending || removerVarios.isPending,
   };
 }
 

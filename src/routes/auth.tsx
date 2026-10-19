@@ -45,14 +45,23 @@ function Entrar() {
   const [carregando, setCarregando] = useState(false);
 
   const destino = () => {
+    const idParaEditar = redirect?.startsWith("/nova-receita?")
+      ? new URLSearchParams(redirect.split("?")[1] ?? "").get("id")
+      : null;
+    if (redirect === "/nova-receita" || idParaEditar) {
+      irPara({
+        to: "/nova-receita",
+        search: idParaEditar ? { id: idParaEditar } : {},
+        replace: true,
+      });
+      return;
+    }
     const para =
-      redirect === "/nova-receita"
-        ? "/nova-receita"
-        : redirect === "/favoritos"
-          ? "/favoritos"
-          : redirect === "/lista-de-compras"
-            ? "/lista-de-compras"
-            : "/minhas-receitas";
+      redirect === "/favoritos"
+        ? "/favoritos"
+        : redirect === "/lista-de-compras"
+          ? "/lista-de-compras"
+          : "/minhas-receitas";
     irPara({ to: para, replace: true });
   };
 

@@ -79,3 +79,52 @@ export function quebrarEmFrases(texto: string): string[] {
     .map((frase) => frase.trim())
     .filter(Boolean);
 }
+
+/** Mantém limites de sentença/lista existentes; texto sem marcadores vira uma única etapa. */
+export function extrairEtapas(texto: string): string[] {
+  const linhas = texto
+    .split(/\r?\n+/)
+    .map((linha) => linha.trim())
+    .filter((linha) => linha && !ehTitulo(linha) && !TITULOS_COMPONENTES.test(linha));
+  if (!linhas.length) return [];
+
+  const numeradas = linhas.some((linha) => /^(?:\d{1,3}[.)]|passo\s+\d+\b|[-*•●])\s*/i.test(linha));
+  if (numeradas) {
+    const etapas: string[] = [];
+    let atual = "";
+    for (const linha of linhas) {
+      const marcador = linha.match(/^(?:(?:\d{1,3}[.)]|passo\s+\d+\s*[:.)-]?|[-*•●])\s*)/i);
+      if (marcador) {
+        if (atual) etapas.push(atual.trim());
+        atual = linha.slice(marcador[0].length).trim();
+      } else {
+        atual = `${atual} ${linha}`.trim();
+      }
+    }
+    if (atual) etapas.push(atual);
+    return etapas;
+  }
+
+  return quebrarEmFrases(linhas.join("\n"));
+}
+
+/** Retorna segundos somente quando o passo declara uma única duração simples e explícita. */
+export function detectarDuracaoSegundos(texto: string): number | undefined {
+  if (/\d+\s*(?:a|até|[-–])\s*\d+/i.test(texto)) return undefined;
+  const ocorrencias = [
+    ...texto.matchAll(/(?<!\d)(\d{1,3})\s*(segundos?|secs?|s|minutos?|mins?|m|horas?|hrs?|h)\b/gi),
+  ];
+  if (ocorrencias.length !== 1) return undefined;
+
+  const [, valorTexto, unidadeTexto] = ocorrencias[0] ?? [];
+  const valor = Number(valorTexto);
+  if (!Number.isInteger(valor) || valor <= 0) return undefined;
+  const unidade = (unidadeTexto ?? "").toLocaleLowerCase("pt-BR");
+  const multiplicador = /^(?:s|sec|secs|segundo|segundos)$/.test(unidade)
+    ? 1
+    : /^(?:h|hr|hrs|hora|horas)$/.test(unidade)
+      ? 3_600
+      : 60;
+  const segundos = valor * multiplicador;
+  return segundos <= 7_200 ? segundos : undefined;
+}

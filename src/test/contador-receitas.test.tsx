@@ -2,7 +2,13 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Outlet, createRootRoute, createRoute, createRouter, RouterProvider } from "@tanstack/react-router";
+import {
+  Outlet,
+  createRootRoute,
+  createRoute,
+  createRouter,
+  RouterProvider,
+} from "@tanstack/react-router";
 import { render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -14,7 +20,11 @@ const catalogo = JSON.parse(
 ) as unknown[];
 
 const rootRoute = createRootRoute({ component: () => <Outlet /> });
-const pagina = createRoute({ getParentRoute: () => rootRoute, path: "/", component: () => <Cabecalho /> });
+const pagina = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/",
+  component: () => <Cabecalho />,
+});
 const routeTree = rootRoute.addChildren([pagina]);
 
 // Monta o topo dentro de um app de verdade, com o mesmo cache de dados usado pelo site.
@@ -43,7 +53,9 @@ describe("Contador de receitas no topo", () => {
 
     const selo = await screen.findByLabelText(new RegExp(`^${catalogo.length} receitas no app$`));
     // O número sobe de 0 até o total, então damos tempo para a animação terminar.
-    await waitFor(() => expect(selo).toHaveTextContent(`${catalogo.length} receitas`), { timeout: 3000 });
+    await waitFor(() => expect(selo).toHaveTextContent(`${catalogo.length} receitas`), {
+      timeout: 3000,
+    });
   });
 
   it("o caderno continua com mais de 500 receitas", () => {
@@ -51,10 +63,21 @@ describe("Contador de receitas no topo", () => {
   });
 
   it("usa o singular quando há só uma receita", async () => {
-    mostrarTopo([{ id: "1", nome: "Bolo", categoria: "Doces", imagem: null, texto: "x" }]);
+    mostrarTopo([
+      {
+        id: "1",
+        nome: "Bolo",
+        categoria: "Doces, sobremesas e doces de festa",
+        imagem: null,
+        texto: "x",
+      },
+    ]);
 
-    await waitFor(() => expect(screen.getByLabelText("1 receita no app")).toHaveTextContent("1 receita"), {
-      timeout: 3000,
-    });
+    await waitFor(
+      () => expect(screen.getByLabelText("1 receita no app")).toHaveTextContent("1 receita"),
+      {
+        timeout: 3000,
+      },
+    );
   });
 });

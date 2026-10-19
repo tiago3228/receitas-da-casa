@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { BookPlus, Clock, Loader2, Trash2, Users } from "lucide-react";
+import { BookPlus, Clock, Loader2, Pencil, Trash2, Users } from "lucide-react";
 import { Cabecalho } from "@/components/Cabecalho";
 import { apagarMinhaReceita, minhasReceitasQueryOptions } from "@/lib/receitas-autorais.functions";
 
@@ -25,17 +25,21 @@ function MinhasReceitas() {
   const { data, isLoading, isError } = useQuery(minhasReceitasQueryOptions);
   const apagar = useServerFn(apagarMinhaReceita);
   const [confirmar, setConfirmar] = useState<string | null>(null);
+  const [removendoId, setRemovendoId] = useState<string | null>(null);
   const [aberta, setAberta] = useState<string | null>(null);
   const [erro, setErro] = useState("");
 
   const remover = async (id: string) => {
     setErro("");
     setConfirmar(null);
+    setRemovendoId(id);
     try {
       await apagar({ data: { id } });
       await queryClient.invalidateQueries({ queryKey: ["minhas-receitas"] });
     } catch {
       setErro("Não consegui remover agora. Tente de novo.");
+    } finally {
+      setRemovendoId(null);
     }
   };
 
@@ -47,7 +51,9 @@ function MinhasReceitas() {
           <div>
             <h1 className="font-display text-3xl font-bold md:text-4xl">Minhas receitas</h1>
             <p className="mt-2 text-lg text-muted-foreground">
-              {data?.length ? `${data.length} ${data.length === 1 ? "receita guardada" : "receitas guardadas"}` : "As receitas que você adicionar ficam aqui."}
+              {data?.length
+                ? `${data.length} ${data.length === 1 ? "receita guardada" : "receitas guardadas"}`
+                : "As receitas que você adicionar ficam aqui."}
             </p>
           </div>
           <Link to="/nova-receita" className="btn-primary">
@@ -57,7 +63,10 @@ function MinhasReceitas() {
         </div>
 
         {erro && (
-          <p className="mt-6 rounded-xl border-2 border-destructive p-4 text-lg text-destructive" role="alert">
+          <p
+            className="mt-6 rounded-xl border-2 border-destructive p-4 text-lg text-destructive"
+            role="alert"
+          >
             {erro}
           </p>
         )}
@@ -67,13 +76,22 @@ function MinhasReceitas() {
             <Loader2 className="h-6 w-6 animate-spin" aria-hidden /> Carregando as suas receitas...
           </p>
         )}
+        {isError && (
+          <p
+            className="mt-6 rounded-xl border-2 border-destructive p-4 text-lg text-destructive"
+            role="alert"
+          >
+            Não foi possível carregar suas receitas. Verifique a conexão e tente novamente.
+          </p>
+        )}
 
         {data && data.length === 0 && (
           <div className="mt-10 rounded-2xl border-2 border-dashed border-border bg-card p-8 text-center">
             <Users className="mx-auto h-12 w-12 text-primary" aria-hidden />
             <h2 className="mt-4 font-display text-2xl font-semibold">Sua lista está vazia</h2>
             <p className="mt-2 text-lg text-muted-foreground">
-              Escreva uma receita do jeito que você tem no caderno — a gente organiza os ingredientes e as etapas.
+              Escreva uma receita do jeito que você tem no caderno — a gente organiza os
+              ingredientes e as etapas.
             </p>
             <Link to="/nova-receita" className="btn-primary mt-6">
               <BookPlus className="h-6 w-6" aria-hidden />
@@ -99,17 +117,27 @@ function MinhasReceitas() {
                       <Clock className="h-5 w-5" aria-hidden /> {r.tempo}
                     </p>
                   )}
-                  <p className="mt-2 text-lg font-semibold text-primary">{aberta === r.id ? "Ocultar" : "Ver receita"}</p>
+                  <p className="mt-2 text-lg font-semibold text-primary">
+                    {aberta === r.id ? "Ocultar" : "Ver receita"}
+                  </p>
                 </button>
                 <div className="flex items-center gap-2">
+                  <Link
+                    to="/nova-receita"
+                    search={{ id: r.id }}
+                    className="inline-flex min-h-12 items-center gap-2 rounded-xl border-2 border-border px-4 py-2 text-lg font-semibold hover:border-primary"
+                  >
+                    <Pencil className="h-5 w-5" aria-hidden /> Editar
+                  </Link>
                   {confirmar === r.id ? (
                     <>
                       <button
                         type="button"
                         className="rounded-xl border-2 border-destructive px-4 py-2 text-lg font-semibold text-destructive"
                         onClick={() => remover(r.id)}
+                        disabled={removendoId === r.id}
                       >
-                        Confirmar
+                        {removendoId === r.id ? "Removendo..." : "Confirmar"}
                       </button>
                       <button
                         type="button"
@@ -124,6 +152,7 @@ function MinhasReceitas() {
                       type="button"
                       className="inline-flex items-center gap-2 rounded-xl border-2 border-border px-4 py-2 text-lg font-semibold text-muted-foreground hover:border-destructive hover:text-destructive"
                       onClick={() => setConfirmar(r.id)}
+                      disabled={removendoId === r.id}
                     >
                       <Trash2 className="h-5 w-5" aria-hidden />
                       Remover
@@ -134,14 +163,19 @@ function MinhasReceitas() {
 
               {aberta === r.id && (
                 <div className="border-t border-border p-5">
-                  {r.rendimento && <p className="text-lg text-muted-foreground">Rende: {r.rendimento}</p>}
+                  {r.rendimento && (
+                    <p className="text-lg text-muted-foreground">Rende: {r.rendimento}</p>
+                  )}
                   {r.ingredientes && (
                     <>
                       <h3 className="mt-4 font-display text-xl font-semibold">Ingredientes</h3>
                       <ul className="mt-2 list-disc space-y-1 pl-6 text-lg">
-                        {r.ingredientes.split("\n").filter(Boolean).map((l, i) => (
-                          <li key={i}>{l}</li>
-                        ))}
+                        {r.ingredientes
+                          .split("\n")
+                          .filter(Boolean)
+                          .map((l, i) => (
+                            <li key={i}>{l}</li>
+                          ))}
                       </ul>
                     </>
                   )}
@@ -149,9 +183,12 @@ function MinhasReceitas() {
                     <>
                       <h3 className="mt-6 font-display text-xl font-semibold">Modo de preparo</h3>
                       <ol className="mt-2 list-decimal space-y-2 pl-6 text-lg">
-                        {r.modo_de_preparo.split("\n").filter(Boolean).map((l, i) => (
-                          <li key={i}>{l}</li>
-                        ))}
+                        {r.modo_de_preparo
+                          .split("\n")
+                          .filter(Boolean)
+                          .map((l, i) => (
+                            <li key={i}>{l}</li>
+                          ))}
                       </ol>
                     </>
                   )}

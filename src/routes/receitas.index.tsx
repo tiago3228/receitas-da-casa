@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { BookPlus, ChevronDown, Loader2, Mic, Search, UtensilsCrossed, X } from "lucide-react";
+import { BookPlus, ChevronDown, Loader2, Mic, Search, X } from "lucide-react";
 import { BotaoFavorito } from "@/components/BotaoFavorito";
 import { Cabecalho } from "@/components/Cabecalho";
+import { ImagemReceita } from "@/components/ImagemReceita";
 import { useFavoritos } from "@/lib/dados-pessoais";
-import { normalizar, receitasQuery } from "@/lib/receitas";
+import { CATEGORIAS_RECEITAS } from "@/lib/catalogo";
+import { filtrarReceitas, receitasQuery } from "@/lib/receitas";
 
 export const Route = createFileRoute("/receitas/")({
   head: () => ({
@@ -111,25 +113,19 @@ export function Lista() {
     }
   };
 
-  const categorias = useMemo(
-    () => ["Todas", ...new Set((data ?? []).map((r) => r.categoria))],
-    [data],
-  );
+  const categorias = useMemo(() => ["Todas", ...CATEGORIAS_RECEITAS], []);
   const contagem = useMemo(() => {
     const m = new Map<string, number>();
     for (const r of data ?? []) m.set(r.categoria, (m.get(r.categoria) ?? 0) + 1);
     return m;
   }, [data]);
-  const filtradas = useMemo(() => {
-    const q = normalizar(busca.trim());
-    return (data ?? [])
-      .filter(
-        (r) =>
-          (cat === "Todas" || r.categoria === cat) &&
-          (!q || normalizar(r.nome + " " + r.texto).includes(q)),
-      )
-      .sort((a, b) => Number(!!b.imagem) - Number(!!a.imagem));
-  }, [data, busca, cat]);
+  const filtradas = useMemo(
+    () =>
+      filtrarReceitas(data ?? [], busca, cat).sort(
+        (a, b) => Number(!!b.imagem) - Number(!!a.imagem),
+      ),
+    [data, busca, cat],
+  );
   const trocar = (c: string) => {
     setCat(c);
     setQtd(POR_PAGINA);
@@ -290,51 +286,67 @@ export function Lista() {
               {filtradas.length}{" "}
               {filtradas.length === 1 ? "receita encontrada" : "receitas encontradas"}
             </p>
-            <ul className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {filtradas.slice(0, qtd).map((r) => (
-                <li
-                  key={r.id}
-                  className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-soft transition hover:border-primary"
-                >
-                  <Link to="/receitas/$id" params={{ id: r.id }} className="block h-full">
-                    {r.imagem ? (
-                      <img
-                        src={r.imagem}
-                        alt={r.nome}
-                        loading="lazy"
-                        className="aspect-[4/3] w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex aspect-[4/3] items-center justify-center bg-secondary">
-                        <UtensilsCrossed className="h-12 w-12 text-primary" aria-hidden />
-                      </div>
-                    )}
-                    <div className="p-5 pr-16">
-                      <p className="text-base text-muted-foreground">{r.categoria}</p>
-                      <h2 className="mt-1 font-display text-xl font-semibold">{r.nome}</h2>
-                    </div>
-                  </Link>
-                  <div className="absolute right-3 top-3">
-                    <BotaoFavorito
-                      compacto
-                      idUsuario={favoritos.idUsuario}
-                      ativo={favoritos.ids.includes(r.id)}
-                      disabled={favoritos.carregando || favoritos.removendo}
-                      aoAlternar={() => favoritos.alternar(r.id)}
-                    />
-                  </div>
-                </li>
-              ))}
-            </ul>
-            {qtd < filtradas.length && (
-              <div className="mt-8 text-center">
+            {filtradas.length === 0 ? (
+              <div className="mt-6 rounded-2xl border-2 border-dashed border-border bg-card p-8 text-center">
+                <h2 className="font-display text-2xl font-semibold">Nenhuma receita encontrada</h2>
+                <p className="mt-2 text-lg text-muted-foreground">
+                  Tente outro ingrediente ou limpe os filtros para ver todas as receitas.
+                </p>
                 <button
-                  className="btn-secondary h-16"
-                  onClick={() => setQtd((n) => n + POR_PAGINA)}
+                  type="button"
+                  className="btn-secondary mt-5"
+                  onClick={() => {
+                    setBusca("");
+                    trocar("Todas");
+                  }}
                 >
-                  Mostrar mais receitas
+                  Limpar busca e filtros
                 </button>
               </div>
+            ) : (
+              <>
+                <ul className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {filtradas.slice(0, qtd).map((r) => {
+                    const idFavorito = [r.id, ...(r.aliases ?? [])].find((id) =>
+                      favoritos.ids.includes(id),
+                    );
+                    return (
+                      <li
+                        key={r.id}
+                        className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-soft transition hover:border-primary"
+                      >
+                        <Link to="/receitas/$id" params={{ id: r.id }} className="block h-full">
+                          <ImagemReceita src={r.imagem} alt={r.nome} />
+                          <div className="p-5 pr-16">
+                            <p className="text-base text-muted-foreground">{r.categoria}</p>
+                            <h2 className="mt-1 font-display text-xl font-semibold">{r.nome}</h2>
+                          </div>
+                        </Link>
+                        <div className="absolute right-3 top-3">
+                          <BotaoFavorito
+                            compacto
+                            idUsuario={favoritos.idUsuario}
+                            ativo={Boolean(idFavorito)}
+                            disabled={favoritos.carregando || favoritos.removendo}
+                            aoAlternar={() => favoritos.alternar(idFavorito ?? r.id)}
+                          />
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+                {qtd < filtradas.length && (
+                  <div className="mt-8 text-center">
+                    <button
+                      type="button"
+                      className="btn-secondary h-16"
+                      onClick={() => setQtd((n) => n + POR_PAGINA)}
+                    >
+                      Mostrar mais receitas
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </>
         )}
