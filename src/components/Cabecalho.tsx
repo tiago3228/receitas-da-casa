@@ -34,6 +34,7 @@ export function Cabecalho() {
   const { data } = useQuery({ ...receitasQuery, enabled: typeof window !== "undefined" });
   const total = data?.length;
   const mostrado = useContagem(total);
+  const palavra = total === 1 ? "receita" : "receitas";
 
   return (
     <header className="border-b border-border bg-card">
