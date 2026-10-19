@@ -1,4 +1,4 @@
-import { Link, navigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { ChefHat, BookOpen, BookPlus, LogIn, LogOut, Sparkles, UtensilsCrossed } from "lucide-react";
@@ -34,6 +34,7 @@ const item =
 
 export function Cabecalho() {
   const queryClient = useQueryClient();
+  const irPara = useNavigate();
   const { entrou } = useSessao();
 
   // Os dados já vêm carregados na tela de receitas; aqui só lemos o mesmo cache.
@@ -46,7 +47,7 @@ export function Cabecalho() {
     await queryClient.cancelQueries();
     queryClient.clear();
     await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
+    irPara({ to: "/auth", replace: true });
   };
 
   return (

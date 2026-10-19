@@ -71,7 +71,7 @@ export const salvarMinhaReceita = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: criada, error } = await context.supabase
       .from("receitas_autorais")
-      .insert(data)
+      .insert({ ...data, user_id: context.userId })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
@@ -138,13 +138,13 @@ ${data.texto}
           : String(v ?? "").trim();
       return {
         receita: {
-          titulo: limpar(p.titulo, 160),
-          categoria: limpar(p.categoria, 80) || "Minhas receitas",
-          tempo: limpar(p.tempo, 60),
-          rendimento: limpar(p.rendimento, 60),
-          ingredientes: limpar(linhas(p.ingredientes), LIMITE_TEXTO),
-          modo_de_preparo: limpar(linhas(p.modo_de_preparo), LIMITE_TEXTO),
-          observacoes: limpar(p.observacoes, 2000),
+          titulo: limpar(p["titulo"], 160),
+          categoria: limpar(p["categoria"], 80) || "Minhas receitas",
+          tempo: limpar(p["tempo"], 60),
+          rendimento: limpar(p["rendimento"], 60),
+          ingredientes: limpar(linhas(p["ingredientes"]), LIMITE_TEXTO),
+          modo_de_preparo: limpar(linhas(p["modo_de_preparo"]), LIMITE_TEXTO),
+          observacoes: limpar(p["observacoes"], 2000),
         },
       };
     } catch (e) {

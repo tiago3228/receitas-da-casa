@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute, Link, navigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2, Save, Sparkles } from "lucide-react";
@@ -48,6 +48,7 @@ const VAZIO = {
 
 function NovaReceita() {
   const queryClient = useQueryClient();
+  const irPara = useNavigate();
   const organizar = useServerFn(organizarReceita);
   const salvar = useServerFn(salvarMinhaReceita);
 
@@ -58,8 +59,10 @@ function NovaReceita() {
   const [carregando, setCarregando] = useState(false);
   const [salvando, setSalvando] = useState(false);
 
-  const mudar = (chave: keyof typeof VAZIO) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-    setCampos((c) => ({ ...c, [chave]: e.target.value }));
+  const mudar =
+    (chave: keyof typeof VAZIO) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+      setCampos((c) => ({ ...c, [chave]: e.target.value }));
 
   const organizarTudo = async () => {
     setErro("");
@@ -90,7 +93,7 @@ function NovaReceita() {
     try {
       await salvar({ data: { ...campos, texto_original: texto } });
       await queryClient.invalidateQueries({ queryKey: ["minhas-receitas"] });
-      navigate({ to: "/minhas-receitas", replace: true });
+      irPara({ to: "/minhas-receitas", replace: true });
     } catch (e) {
       setErro(e instanceof Error && e.message ? e.message : "Não foi possível salvar. Tente de novo.");
       setSalvando(false);
