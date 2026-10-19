@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { ChefHat, Plus, X, Sparkles, Clock, Repeat, Loader2 } from "lucide-react";
+import { Plus, X, Sparkles, Clock, Repeat, Loader2 } from "lucide-react";
+import { Cabecalho } from "@/components/Cabecalho";
 import { sugerirReceitas, type Sugestao } from "@/lib/sugestoes.functions";
 
 export const Route = createFileRoute("/")({
@@ -52,12 +53,7 @@ function Index() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border bg-card">
-        <div className="mx-auto flex max-w-4xl items-center gap-3 px-5 py-5">
-          <ChefHat className="h-9 w-9 text-primary" aria-hidden />
-          <span className="font-display text-3xl font-bold text-primary">Saborê</span>
-        </div>
-      </header>
+      <Cabecalho />
 
       <main className="mx-auto max-w-4xl px-5 py-10">
         <h1 className="font-display text-3xl font-bold md:text-4xl">O que você tem em casa?</h1>
