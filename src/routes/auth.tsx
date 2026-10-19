@@ -3,6 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ChefHat, Loader2, MailCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Cabecalho } from "@/components/Cabecalho";
+import { CampoSenha } from "@/components/CampoSenha";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -171,13 +172,11 @@ function Entrar() {
               <label htmlFor="senha" className="block text-lg font-semibold">
                 Senha
               </label>
-              <input
+              <CampoSenha
                 id="senha"
-                type="password"
-                required
-                className={`${CAMPO} mt-2`}
+                className="mt-2"
                 value={senha}
-                onChange={(e) => setSenha(e.target.value)}
+                onChange={setSenha}
                 placeholder="Pelo menos 6 letras"
                 autoComplete={criando ? "new-password" : "current-password"}
               />

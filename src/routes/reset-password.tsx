@@ -3,6 +3,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Cabecalho } from "@/components/Cabecalho";
+import { CampoSenha } from "@/components/CampoSenha";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
@@ -76,13 +77,11 @@ function SenhaNova() {
                   <label htmlFor="senha" className="block text-lg font-semibold">
                     Senha nova
                   </label>
-                  <input
+                  <CampoSenha
                     id="senha"
-                    type="password"
-                    required
-                    className={`${CAMPO} mt-2`}
+                    className="mt-2"
                     value={senha}
-                    onChange={(e) => setSenha(e.target.value)}
+                    onChange={setSenha}
                     autoComplete="new-password"
                   />
                 </div>
