@@ -28,7 +28,8 @@ function useContagem(alvo: number | undefined) {
 }
 
 export function Cabecalho() {
-  const item = "flex items-center gap-2 rounded-xl px-4 py-3 text-lg font-semibold text-foreground hover:bg-secondary";
+  const item =
+    "flex items-center gap-2 whitespace-nowrap rounded-xl px-3 py-2 text-base font-semibold text-foreground hover:bg-secondary sm:px-4 sm:py-3 sm:text-lg";
 
   // Os dados já vêm carregados na tela de receitas; aqui só lemos o mesmo cache.
   const { data } = useQuery({ ...receitasQuery, enabled: typeof window !== "undefined" });
@@ -41,11 +42,11 @@ export function Cabecalho() {
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-5 py-4">
         <div className="flex flex-wrap items-center gap-3">
           <Link to="/" className="flex items-center gap-3">
-            <ChefHat className="h-9 w-9 text-primary" aria-hidden />
-            <span className="font-display text-3xl font-bold text-primary">Saborê</span>
+            <ChefHat className="h-7 w-7 text-primary sm:h-9 sm:w-9" aria-hidden />
+            <span className="font-display text-2xl font-bold text-primary sm:text-3xl">Saborê</span>
           </Link>
           <span
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-4 py-2 text-lg font-semibold text-secondary-foreground"
+            className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-border bg-secondary px-3 py-1 text-sm font-semibold text-secondary-foreground sm:gap-2 sm:px-4 sm:py-2 sm:text-lg"
             aria-label={total == null ? "Carregando quantidade de receitas" : `${total} ${palavra} no app`}
           >
             <UtensilsCrossed className="h-5 w-5 text-primary" aria-hidden />
