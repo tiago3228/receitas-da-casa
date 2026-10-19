@@ -2,13 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import {
-  Outlet,
-  createRootRoute,
-  createRoute,
-  createRouter,
-  RouterProvider,
-} from "@tanstack/react-router";
+import { Outlet, createRootRoute, createRoute, createRouter, RouterProvider } from "@tanstack/react-router";
 import { render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -23,27 +17,32 @@ const rootRoute = createRootRoute({ component: () => <Outlet /> });
 const pagina = createRoute({ getParentRoute: () => rootRoute, path: "/", component: () => <Cabecalho /> });
 const routeTree = rootRoute.addChildren([pagina]);
 
-describe("Contador de receitas no topo", () => {
-  beforeEach(() => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => ({ ok: true, json: async () => catalogo })),
-    );
-  });
+// Monta o topo dentro de um app de verdade, com o mesmo cache de dados usado pelo site.
+function mostrarTopo(receitas: unknown[]) {
+  const queryClient = new QueryClient();
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => ({ ok: true, json: async () => receitas })),
+  );
+  const router = createRouter({ routeTree, context: { queryClient } });
 
+  render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  );
+}
+
+describe("Contador de receitas no topo", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
   });
 
+  beforeEach(() => {
+    mostrarTopo(catalogo);
+  });
+
   it("mostra no topo o total real de receitas do caderno", async () => {
-    const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
-
-    render(
-      <QueryClientProvider client={router.options.context.queryClient}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>,
-    );
-
     const selo = await screen.findByLabelText(new RegExp(`^${catalogo.length} receitas no app$`));
     // O número sobe de 0 até o total, então damos tempo para a animação terminar.
     await waitFor(() => expect(selo).toHaveTextContent(`${catalogo.length} receitas`), { timeout: 3000 });
@@ -54,17 +53,7 @@ describe("Contador de receitas no topo", () => {
   });
 
   it("usa o singular quando há só uma receita", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => ({ ok: true, json: async () => [{ id: "1", nome: "Bolo", categoria: "Doces", imagem: null, texto: "x" }] })),
-    );
-    const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
-
-    render(
-      <QueryClientProvider client={router.options.context.queryClient}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>,
-    );
+    mostrarTopo([{ id: "1", nome: "Bolo", categoria: "Doces", imagem: null, texto: "x" }]);
 
     await waitFor(() => expect(screen.getByLabelText("1 receita no app")).toHaveTextContent("1 receita"), {
       timeout: 3000,
