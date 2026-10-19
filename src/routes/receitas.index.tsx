@@ -24,7 +24,7 @@ export const Route = createFileRoute("/receitas/")({
 
 const POR_PAGINA = 24;
 
-function Lista() {
+export function Lista() {
   const { data, isLoading, isError } = useQuery(receitasQuery);
   const [busca, setBusca] = useState("");
   const [cat, setCat] = useState("Todas");
