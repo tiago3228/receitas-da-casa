@@ -73,7 +73,16 @@ function Entrar() {
     } catch (e) {
       setErro(
         e instanceof Error && e.message
-          ? e.message.replace("Invalid login credentials", "E-mail ou senha não conferem.")
+          ? e.message
+              .replace("Invalid login credentials", "E-mail ou senha não conferem.")
+              .replace(
+                "Password is known to be weak and easy to guess, please choose a different one.",
+                "Essa senha é fácil de adivinhar. Escolha outra, com letras, números e um símbolo.",
+              )
+              .replace(
+                "Email already registered",
+                "Esse e-mail já tem conta. Entre com ele ou use \"Esqueci minha senha\".",
+              )
           : "Algo deu errado. Tente de novo.",
       );
     } finally {
