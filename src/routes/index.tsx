@@ -126,7 +126,7 @@ function Index() {
                     <div className="mt-4 rounded-xl bg-accent p-4">
                       <p className="flex items-center gap-2 text-lg font-semibold"><Repeat className="h-5 w-5" aria-hidden /> Trocas práticas</p>
                       <ul className="mt-2 space-y-1 text-lg">
-                        {r.substituicoes.map((s) => <li key={s.falta}>Sem <strong>{s.falta}</strong>? Use {s.troca}.</li>)}
+                        {r.substituicoes.map((s) => <li key={s.falta}>Sem <strong>{s.falta}</strong>? Use {s.troca.replace(/\.+$/, "").replace(/^./, (c) => c.toLowerCase())}.</li>)}
                       </ul>
                     </div>
                   )}
