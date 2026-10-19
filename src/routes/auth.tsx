@@ -9,7 +9,10 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Entrar — Saborê" },
-      { name: "description", content: "Entre ou crie sua conta para guardar as suas receitas no Saborê." },
+      {
+        name: "description",
+        content: "Entre ou crie sua conta para guardar as suas receitas no Saborê.",
+      },
       { property: "og:title", content: "Entrar — Saborê" },
       { property: "og:description", content: "Guarde as suas receitas com conta e senha." },
       { property: "og:type", content: "website" },
@@ -17,7 +20,10 @@ export const Route = createFileRoute("/auth")({
     ],
   }),
   validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
-    const r = typeof search["redirect"] === "string" && search["redirect"].startsWith("/") ? search["redirect"] : "";
+    const r =
+      typeof search["redirect"] === "string" && search["redirect"].startsWith("/")
+        ? search["redirect"]
+        : "";
     return r ? { redirect: r } : {};
   },
   component: Entrar,
@@ -39,7 +45,14 @@ function Entrar() {
   const [carregando, setCarregando] = useState(false);
 
   const destino = () => {
-    const para = redirect === "/nova-receita" ? "/nova-receita" : "/minhas-receitas";
+    const para =
+      redirect === "/nova-receita"
+        ? "/nova-receita"
+        : redirect === "/favoritos"
+          ? "/favoritos"
+          : redirect === "/lista-de-compras"
+            ? "/lista-de-compras"
+            : "/minhas-receitas";
     irPara({ to: para, replace: true });
   };
 
@@ -61,13 +74,18 @@ function Entrar() {
         });
         if (error) throw new Error(error.message);
         if (!data.session) {
-          setAviso("Prontinho! Abra o seu e-mail e clique no link para confirmar a conta. Depois é só entrar.");
+          setAviso(
+            "Prontinho! Abra o seu e-mail e clique no link para confirmar a conta. Depois é só entrar.",
+          );
           setCriando(false);
         } else {
           destino();
         }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password: senha });
+        const { error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password: senha,
+        });
         if (error) throw new Error(error.message);
         destino();
       }
@@ -82,7 +100,7 @@ function Entrar() {
               )
               .replace(
                 "Email already registered",
-                "Esse e-mail já tem conta. Entre com ele ou use \"Esqueci minha senha\".",
+                'Esse e-mail já tem conta. Entre com ele ou use "Esqueci minha senha".',
               )
           : "Algo deu errado. Tente de novo.",
       );
@@ -117,7 +135,9 @@ function Entrar() {
         <div className="rounded-2xl border border-border bg-card p-6 shadow-soft sm:p-8">
           <div className="flex items-center gap-3">
             <ChefHat className="h-9 w-9 text-primary" aria-hidden />
-            <h1 className="font-display text-3xl font-bold">{criando ? "Criar conta" : "Entrar"}</h1>
+            <h1 className="font-display text-3xl font-bold">
+              {criando ? "Criar conta" : "Entrar"}
+            </h1>
           </div>
           <p className="mt-2 text-lg text-muted-foreground">
             {criando
@@ -132,7 +152,10 @@ function Entrar() {
             </p>
           )}
           {erro && (
-            <p className="mt-5 rounded-xl border-2 border-destructive p-4 text-lg text-destructive" role="alert">
+            <p
+              className="mt-5 rounded-xl border-2 border-destructive p-4 text-lg text-destructive"
+              role="alert"
+            >
               {erro}
             </p>
           )}

@@ -32,6 +32,54 @@ export type Database = {
         }
         Relationships: []
       }
+      favoritos_receitas: {
+        Row: {
+          criado_em: string
+          receita_id: string
+          user_id: string
+        }
+        Insert: {
+          criado_em?: string
+          receita_id: string
+          user_id: string
+        }
+        Update: {
+          criado_em?: string
+          receita_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      lista_compras_itens: {
+        Row: {
+          criado_em: string
+          id: string
+          ingrediente: string
+          ja_tem: boolean
+          receita_id: string | null
+          receita_nome: string
+          user_id: string
+        }
+        Insert: {
+          criado_em?: string
+          id?: string
+          ingrediente: string
+          ja_tem?: boolean
+          receita_id?: string | null
+          receita_nome?: string
+          user_id: string
+        }
+        Update: {
+          criado_em?: string
+          id?: string
+          ingrediente?: string
+          ja_tem?: boolean
+          receita_id?: string | null
+          receita_nome?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       receitas_autorais: {
         Row: {
           atualizado_em: string

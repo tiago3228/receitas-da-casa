@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { Search, Loader2, UtensilsCrossed, BookPlus, X, ChevronDown } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { BookPlus, ChevronDown, Loader2, Mic, Search, UtensilsCrossed, X } from "lucide-react";
+import { BotaoFavorito } from "@/components/BotaoFavorito";
 import { Cabecalho } from "@/components/Cabecalho";
-import { receitasQuery, normalizar } from "@/lib/receitas";
+import { useFavoritos } from "@/lib/dados-pessoais";
+import { normalizar, receitasQuery } from "@/lib/receitas";
 
 export const Route = createFileRoute("/receitas/")({
   head: () => ({
@@ -11,10 +13,14 @@ export const Route = createFileRoute("/receitas/")({
       { title: "Receitas — Saborê" },
       {
         name: "description",
-        content: "Mais de 500 receitas caseiras: bolos, doces, pães, carnes, acompanhamentos e mais.",
+        content:
+          "Mais de 500 receitas caseiras: bolos, doces, pães, carnes, acompanhamentos e mais.",
       },
       { property: "og:title", content: "Receitas — Saborê" },
-      { property: "og:description", content: "Mais de 500 receitas caseiras organizadas por categoria." },
+      {
+        property: "og:description",
+        content: "Mais de 500 receitas caseiras organizadas por categoria.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -23,31 +29,107 @@ export const Route = createFileRoute("/receitas/")({
 });
 
 const POR_PAGINA = 24;
+type ResultadoReconhecimento = { transcript: string };
+type EventoReconhecimento = { results: ArrayLike<ArrayLike<ResultadoReconhecimento>> };
+type ReconhecimentoVoz = {
+  lang: string;
+  interimResults: boolean;
+  maxAlternatives: number;
+  onresult: ((evento: EventoReconhecimento) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+};
+type JanelaComReconhecimento = Window & {
+  SpeechRecognition?: new () => ReconhecimentoVoz;
+  webkitSpeechRecognition?: new () => ReconhecimentoVoz;
+};
 
 export function Lista() {
   const { data, isLoading, isError } = useQuery(receitasQuery);
+  const favoritos = useFavoritos();
   const [busca, setBusca] = useState("");
   const [cat, setCat] = useState("Todas");
   const [aberto, setAberto] = useState(false);
   const [qtd, setQtd] = useState(POR_PAGINA);
+  const [ouvindo, setOuvindo] = useState(false);
+  const [erroVoz, setErroVoz] = useState("");
+  const reconhecimento = useRef<ReconhecimentoVoz | null>(null);
 
-  const categorias = useMemo(() => ["Todas", ...new Set((data ?? []).map((r) => r.categoria))], [data]);
+  useEffect(
+    () => () => {
+      try {
+        reconhecimento.current?.stop();
+      } catch {
+        // O reconhecimento pode já ter sido encerrado pelo navegador.
+      }
+    },
+    [],
+  );
 
+  const iniciarBuscaPorVoz = () => {
+    setErroVoz("");
+    if (ouvindo) {
+      reconhecimento.current?.stop();
+      return;
+    }
+    const janela = window as JanelaComReconhecimento;
+    const Construtor = janela.SpeechRecognition ?? janela.webkitSpeechRecognition;
+    if (!Construtor) {
+      setErroVoz("A busca por voz não está disponível neste navegador. Você pode digitar a busca.");
+      return;
+    }
+    const instancia = new Construtor();
+    instancia.lang = "pt-BR";
+    instancia.interimResults = true;
+    instancia.maxAlternatives = 1;
+    instancia.onresult = (evento) => {
+      const texto = Array.from(evento.results)
+        .map((resultado) => resultado[0]?.transcript ?? "")
+        .join(" ")
+        .trim();
+      if (texto) {
+        setBusca(texto);
+        setQtd(POR_PAGINA);
+      }
+    };
+    instancia.onerror = () => {
+      setErroVoz(
+        "Não consegui reconhecer a busca. Verifique a permissão do microfone e tente novamente.",
+      );
+      setOuvindo(false);
+    };
+    instancia.onend = () => setOuvindo(false);
+    reconhecimento.current = instancia;
+    try {
+      instancia.start();
+      setOuvindo(true);
+    } catch {
+      setOuvindo(false);
+      setErroVoz("Não foi possível iniciar o microfone. Tente novamente.");
+    }
+  };
+
+  const categorias = useMemo(
+    () => ["Todas", ...new Set((data ?? []).map((r) => r.categoria))],
+    [data],
+  );
   const contagem = useMemo(() => {
     const m = new Map<string, number>();
     for (const r of data ?? []) m.set(r.categoria, (m.get(r.categoria) ?? 0) + 1);
     return m;
   }, [data]);
-
   const filtradas = useMemo(() => {
     const q = normalizar(busca.trim());
     return (data ?? [])
       .filter(
-        (r) => (cat === "Todas" || r.categoria === cat) && (!q || normalizar(r.nome + " " + r.texto).includes(q)),
+        (r) =>
+          (cat === "Todas" || r.categoria === cat) &&
+          (!q || normalizar(r.nome + " " + r.texto).includes(q)),
       )
       .sort((a, b) => Number(!!b.imagem) - Number(!!a.imagem));
   }, [data, busca, cat]);
-
   const trocar = (c: string) => {
     setCat(c);
     setQtd(POR_PAGINA);
@@ -66,16 +148,17 @@ export function Lista() {
             </p>
           </div>
           <Link to="/nova-receita" className="btn-secondary h-14">
-            <BookPlus className="h-5 w-5" aria-hidden />
-            Adicionar receita
+            <BookPlus className="h-5 w-5" aria-hidden /> Adicionar receita
           </Link>
         </div>
-
         <label htmlFor="busca" className="mt-8 block text-lg font-semibold">
           Procurar receita ou ingrediente
         </label>
         <div className="relative mt-2">
-          <Search className="absolute left-5 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground" aria-hidden />
+          <Search
+            className="absolute left-5 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground"
+            aria-hidden
+          />
           <input
             id="busca"
             value={busca}
@@ -84,21 +167,51 @@ export function Lista() {
               setQtd(POR_PAGINA);
             }}
             placeholder="Ex.: bolo de cenoura, frango, coco"
-            className="h-16 w-full rounded-xl border-2 border-input bg-card pl-14 pr-14 text-xl outline-none focus:border-primary"
+            className="h-16 w-full rounded-xl border-2 border-input bg-card pl-14 pr-28 text-xl outline-none focus:border-primary"
           />
-          {busca && (
+          <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
             <button
               type="button"
-              onClick={() => setBusca("")}
-              aria-label="Limpar a busca"
-              className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-2 text-muted-foreground hover:bg-secondary"
+              onClick={iniciarBuscaPorVoz}
+              aria-label={ouvindo ? "Parar busca por voz" : "Buscar receita por voz"}
+              aria-pressed={ouvindo}
+              title={ouvindo ? "Parar de ouvir" : "Buscar por voz"}
+              className={`rounded-full p-2.5 transition ${ouvindo ? "bg-primary text-primary-foreground" : "text-primary hover:bg-secondary"}`}
             >
-              <X className="h-6 w-6" aria-hidden />
+              <Mic className="h-6 w-6" aria-hidden />
             </button>
-          )}
+            {busca && (
+              <button
+                type="button"
+                onClick={() => {
+                  setBusca("");
+                  setQtd(POR_PAGINA);
+                }}
+                aria-label="Limpar a busca"
+                className="rounded-full p-2.5 text-muted-foreground hover:bg-secondary"
+              >
+                <X className="h-6 w-6" aria-hidden />
+              </button>
+            )}
+          </div>
         </div>
+        <p className="mt-2 min-h-6 text-sm text-muted-foreground" aria-live="polite">
+          {ouvindo ? "Ouvindo... fale o nome de uma receita ou ingrediente." : erroVoz}
+        </p>
+        {favoritos.erro && (
+          <p
+            className="mt-3 rounded-xl border-2 border-destructive p-4 text-destructive"
+            role="alert"
+          >
+            Não foi possível carregar seus favoritos. Confirme que aplicou a migration SQL no
+            Lovable.
+          </p>
+        )}
 
-        <section className="mt-6 rounded-2xl border border-border bg-card" aria-label="Filtro por categoria">
+        <section
+          className="mt-6 rounded-2xl border border-border bg-card"
+          aria-label="Filtro por categoria"
+        >
           <div className="flex flex-wrap items-center gap-2 p-3 sm:p-4">
             <button
               type="button"
@@ -150,9 +263,7 @@ export function Lista() {
                     >
                       {c}
                       <span
-                        className={`rounded-full px-2 py-0.5 text-sm tabular-nums ${
-                          ativo ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"
-                        }`}
+                        className={`rounded-full px-2 py-0.5 text-sm tabular-nums ${ativo ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"}`}
                       >
                         {n}
                       </span>
@@ -163,44 +274,64 @@ export function Lista() {
             </div>
           )}
         </section>
-
         {isLoading && (
           <p className="mt-10 flex items-center gap-3 text-lg">
             <Loader2 className="h-6 w-6 animate-spin" aria-hidden /> Carregando receitas...
           </p>
         )}
-        {isError && <p className="mt-10 text-lg text-destructive">Não foi possível carregar as receitas. Recarregue a página.</p>}
+        {isError && (
+          <p className="mt-10 text-lg text-destructive">
+            Não foi possível carregar as receitas. Recarregue a página.
+          </p>
+        )}
         {data && (
           <>
             <p className="mt-8 text-lg text-muted-foreground" aria-live="polite">
-              {filtradas.length} {filtradas.length === 1 ? "receita encontrada" : "receitas encontradas"}
+              {filtradas.length}{" "}
+              {filtradas.length === 1 ? "receita encontrada" : "receitas encontradas"}
             </p>
             <ul className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {filtradas.slice(0, qtd).map((r) => (
-                <li key={r.id}>
-                  <Link
-                    to="/receitas/$id"
-                    params={{ id: r.id }}
-                    className="block h-full overflow-hidden rounded-2xl border border-border bg-card shadow-soft transition hover:border-primary"
-                  >
+                <li
+                  key={r.id}
+                  className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-soft transition hover:border-primary"
+                >
+                  <Link to="/receitas/$id" params={{ id: r.id }} className="block h-full">
                     {r.imagem ? (
-                      <img src={r.imagem} alt={r.nome} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                      <img
+                        src={r.imagem}
+                        alt={r.nome}
+                        loading="lazy"
+                        className="aspect-[4/3] w-full object-cover"
+                      />
                     ) : (
                       <div className="flex aspect-[4/3] items-center justify-center bg-secondary">
                         <UtensilsCrossed className="h-12 w-12 text-primary" aria-hidden />
                       </div>
                     )}
-                    <div className="p-5">
+                    <div className="p-5 pr-16">
                       <p className="text-base text-muted-foreground">{r.categoria}</p>
                       <h2 className="mt-1 font-display text-xl font-semibold">{r.nome}</h2>
                     </div>
                   </Link>
+                  <div className="absolute right-3 top-3">
+                    <BotaoFavorito
+                      compacto
+                      idUsuario={favoritos.idUsuario}
+                      ativo={favoritos.ids.includes(r.id)}
+                      disabled={favoritos.carregando || favoritos.removendo}
+                      aoAlternar={() => favoritos.alternar(r.id)}
+                    />
+                  </div>
                 </li>
               ))}
             </ul>
             {qtd < filtradas.length && (
               <div className="mt-8 text-center">
-                <button className="btn-secondary h-16" onClick={() => setQtd((n) => n + POR_PAGINA)}>
+                <button
+                  className="btn-secondary h-16"
+                  onClick={() => setQtd((n) => n + POR_PAGINA)}
+                >
                   Mostrar mais receitas
                 </button>
               </div>

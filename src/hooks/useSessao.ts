@@ -25,5 +25,5 @@ export function useSessao() {
     };
   }, []);
 
-  return { sessao, carregando, entrou: Boolean(sessao) };
+  return { sessao, carregando, entrou: Boolean(sessao), idUsuario: sessao?.user.id };
 }

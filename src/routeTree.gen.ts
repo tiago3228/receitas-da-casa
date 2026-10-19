@@ -13,6 +13,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AuthenticatedFavoritosRouteImport } from './routes/_authenticated/favoritos'
+import { Route as AuthenticatedListaDeComprasRouteImport } from './routes/_authenticated/lista-de-compras'
 import { Route as AuthenticatedMinhasReceitasRouteImport } from './routes/_authenticated/minhas-receitas'
 import { Route as AuthenticatedNovaReceitaRouteImport } from './routes/_authenticated/nova-receita'
 import { Route as ReceitasIndexRouteImport } from './routes/receitas.index'
@@ -37,6 +39,17 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedFavoritosRoute = AuthenticatedFavoritosRouteImport.update({
+  id: '/favoritos',
+  path: '/favoritos',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedListaDeComprasRoute =
+  AuthenticatedListaDeComprasRouteImport.update({
+    id: '/lista-de-compras',
+    path: '/lista-de-compras',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedMinhasReceitasRoute =
   AuthenticatedMinhasReceitasRouteImport.update({
     id: '/minhas-receitas',
@@ -64,6 +77,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/favoritos': typeof AuthenticatedFavoritosRoute
+  '/lista-de-compras': typeof AuthenticatedListaDeComprasRoute
   '/minhas-receitas': typeof AuthenticatedMinhasReceitasRoute
   '/nova-receita': typeof AuthenticatedNovaReceitaRoute
   '/receitas/$id': typeof ReceitasIdRoute
@@ -73,6 +88,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/favoritos': typeof AuthenticatedFavoritosRoute
+  '/lista-de-compras': typeof AuthenticatedListaDeComprasRoute
   '/minhas-receitas': typeof AuthenticatedMinhasReceitasRoute
   '/nova-receita': typeof AuthenticatedNovaReceitaRoute
   '/receitas/$id': typeof ReceitasIdRoute
@@ -84,6 +101,8 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/favoritos': typeof AuthenticatedFavoritosRoute
+  '/_authenticated/lista-de-compras': typeof AuthenticatedListaDeComprasRoute
   '/_authenticated/minhas-receitas': typeof AuthenticatedMinhasReceitasRoute
   '/_authenticated/nova-receita': typeof AuthenticatedNovaReceitaRoute
   '/receitas/$id': typeof ReceitasIdRoute
@@ -95,6 +114,8 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/reset-password'
+    | '/favoritos'
+    | '/lista-de-compras'
     | '/minhas-receitas'
     | '/nova-receita'
     | '/receitas/$id'
@@ -104,6 +125,8 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/reset-password'
+    | '/favoritos'
+    | '/lista-de-compras'
     | '/minhas-receitas'
     | '/nova-receita'
     | '/receitas/$id'
@@ -114,6 +137,8 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/reset-password'
+    | '/_authenticated/favoritos'
+    | '/_authenticated/lista-de-compras'
     | '/_authenticated/minhas-receitas'
     | '/_authenticated/nova-receita'
     | '/receitas/$id'
@@ -159,6 +184,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/favoritos': {
+      id: '/_authenticated/favoritos'
+      path: '/favoritos'
+      fullPath: '/favoritos'
+      preLoaderRoute: typeof AuthenticatedFavoritosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/lista-de-compras': {
+      id: '/_authenticated/lista-de-compras'
+      path: '/lista-de-compras'
+      fullPath: '/lista-de-compras'
+      preLoaderRoute: typeof AuthenticatedListaDeComprasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/minhas-receitas': {
       id: '/_authenticated/minhas-receitas'
       path: '/minhas-receitas'
@@ -191,11 +230,15 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedFavoritosRoute: typeof AuthenticatedFavoritosRoute
+  AuthenticatedListaDeComprasRoute: typeof AuthenticatedListaDeComprasRoute
   AuthenticatedMinhasReceitasRoute: typeof AuthenticatedMinhasReceitasRoute
   AuthenticatedNovaReceitaRoute: typeof AuthenticatedNovaReceitaRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedFavoritosRoute: AuthenticatedFavoritosRoute,
+  AuthenticatedListaDeComprasRoute: AuthenticatedListaDeComprasRoute,
   AuthenticatedMinhasReceitasRoute: AuthenticatedMinhasReceitasRoute,
   AuthenticatedNovaReceitaRoute: AuthenticatedNovaReceitaRoute,
 }

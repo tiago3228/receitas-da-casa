@@ -1,7 +1,17 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { ChefHat, BookOpen, BookPlus, LogIn, LogOut, Sparkles, UtensilsCrossed } from "lucide-react";
+import {
+  ChefHat,
+  BookOpen,
+  BookPlus,
+  Heart,
+  LogIn,
+  LogOut,
+  ShoppingBasket,
+  Sparkles,
+  UtensilsCrossed,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSessao } from "@/hooks/useSessao";
 import { receitasQuery } from "@/lib/receitas";
@@ -60,7 +70,9 @@ export function Cabecalho() {
           </Link>
           <span
             className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-border bg-secondary px-3 py-1 text-sm font-semibold text-secondary-foreground sm:px-4 sm:py-2 sm:text-lg"
-            aria-label={total == null ? "Carregando quantidade de receitas" : `${total} ${palavra} no app`}
+            aria-label={
+              total == null ? "Carregando quantidade de receitas" : `${total} ${palavra} no app`
+            }
           >
             <UtensilsCrossed className="h-5 w-5 text-primary" aria-hidden />
             {total == null ? (
@@ -76,8 +88,26 @@ export function Cabecalho() {
         </div>
 
         <nav className="ml-auto flex flex-wrap items-center gap-2" aria-label="Navegação principal">
-          <Link to="/receitas" className={item} activeProps={{ className: "bg-secondary text-primary" }}>
+          <Link
+            to="/receitas"
+            className={item}
+            activeProps={{ className: "bg-secondary text-primary" }}
+          >
             <BookOpen className="h-5 w-5" aria-hidden /> Receitas
+          </Link>
+          <Link
+            to="/favoritos"
+            className={item}
+            activeProps={{ className: "bg-secondary text-primary" }}
+          >
+            <Heart className="h-5 w-5" aria-hidden /> Favoritos
+          </Link>
+          <Link
+            to="/lista-de-compras"
+            className={item}
+            activeProps={{ className: "bg-secondary text-primary" }}
+          >
+            <ShoppingBasket className="h-5 w-5" aria-hidden /> Lista de compras
           </Link>
           <Link
             to="/minhas-receitas"
