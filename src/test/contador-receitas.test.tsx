@@ -38,11 +38,9 @@ describe("Contador de receitas no topo", () => {
     vi.unstubAllGlobals();
   });
 
-  beforeEach(() => {
-    mostrarTopo(catalogo);
-  });
-
   it("mostra no topo o total real de receitas do caderno", async () => {
+    mostrarTopo(catalogo);
+
     const selo = await screen.findByLabelText(new RegExp(`^${catalogo.length} receitas no app$`));
     // O número sobe de 0 até o total, então damos tempo para a animação terminar.
     await waitFor(() => expect(selo).toHaveTextContent(`${catalogo.length} receitas`), { timeout: 3000 });
