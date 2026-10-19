@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Search, Loader2, UtensilsCrossed, BookPlus, X } from "lucide-react";
+import { Search, Loader2, UtensilsCrossed, BookPlus, X, ChevronDown } from "lucide-react";
 import { Cabecalho } from "@/components/Cabecalho";
 import { receitasQuery, normalizar } from "@/lib/receitas";
 
@@ -28,6 +28,7 @@ function Lista() {
   const { data, isLoading, isError } = useQuery(receitasQuery);
   const [busca, setBusca] = useState("");
   const [cat, setCat] = useState("Todas");
+  const [aberto, setAberto] = useState(false);
   const [qtd, setQtd] = useState(POR_PAGINA);
 
   const categorias = useMemo(() => ["Todas", ...new Set((data ?? []).map((r) => r.categoria))], [data]);
@@ -50,6 +51,7 @@ function Lista() {
   const trocar = (c: string) => {
     setCat(c);
     setQtd(POR_PAGINA);
+    setAberto(false);
   };
 
   return (
