@@ -46,7 +46,7 @@ export function Cabecalho() {
           </Link>
           <span
             className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-4 py-2 text-lg font-semibold text-secondary-foreground"
-            aria-label={total == null ? "Carregando quantidade de receitas" : `${total} receitas no app`}
+            aria-label={total == null ? "Carregando quantidade de receitas" : `${total} ${palavra} no app`}
           >
             <UtensilsCrossed className="h-5 w-5 text-primary" aria-hidden />
             {total == null ? (
@@ -54,7 +54,7 @@ export function Cabecalho() {
             ) : (
               <span aria-hidden>
                 <span className="tabular-nums">{mostrado.toLocaleString("pt-BR")}</span>{" "}
-                {total === 1 ? "receita" : "receitas"}
+                {palavra}
               </span>
             )}
           </span>
