@@ -98,9 +98,28 @@ function Lista() {
           )}
         </div>
 
-        <section className="mt-6 rounded-2xl border border-border bg-card p-5" aria-label="Filtro por categoria">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-display text-xl font-semibold">Categorias</h2>
+        <section className="mt-6 rounded-2xl border border-border bg-card" aria-label="Filtro por categoria">
+          <div className="flex flex-wrap items-center gap-2 p-3 sm:p-4">
+            <button
+              type="button"
+              onClick={() => setAberto((a) => !a)}
+              aria-expanded={aberto}
+              aria-controls="painel-categorias"
+              className="flex flex-1 items-center justify-between gap-3 rounded-xl px-2 py-2 text-left hover:bg-secondary"
+            >
+              <span className="flex flex-wrap items-center gap-2">
+                <span className="font-display text-xl font-semibold">Categorias</span>
+                {cat !== "Todas" && (
+                  <span className="rounded-full bg-primary px-3 py-1 text-sm font-semibold text-primary-foreground">
+                    {cat}
+                  </span>
+                )}
+              </span>
+              <ChevronDown
+                className={`h-6 w-6 shrink-0 text-muted-foreground transition-transform ${aberto ? "rotate-180" : ""}`}
+                aria-hidden
+              />
+            </button>
             {cat !== "Todas" && (
               <button
                 type="button"
@@ -111,34 +130,38 @@ function Lista() {
               </button>
             )}
           </div>
-          <div className="mt-4 flex flex-wrap gap-2.5" role="group" aria-label="Escolher categoria">
-            {categorias.map((c) => {
-              const ativo = cat === c;
-              const n = c === "Todas" ? (data?.length ?? 0) : (contagem.get(c) ?? 0);
-              return (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => trocar(c)}
-                  aria-pressed={ativo}
-                  className={`inline-flex min-h-12 items-center gap-2 rounded-full border-2 px-4 text-base font-semibold transition-colors ${
-                    ativo
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-background text-foreground hover:border-primary hover:bg-secondary"
-                  }`}
-                >
-                  {c}
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-sm tabular-nums ${
-                      ativo ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {n}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+          {aberto && (
+            <div id="painel-categorias" className="border-t border-border p-4 sm:p-5">
+              <div className="flex flex-wrap gap-2.5" role="group" aria-label="Escolher categoria">
+                {categorias.map((c) => {
+                  const ativo = cat === c;
+                  const n = c === "Todas" ? (data?.length ?? 0) : (contagem.get(c) ?? 0);
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => trocar(c)}
+                      aria-pressed={ativo}
+                      className={`inline-flex min-h-12 items-center gap-2 rounded-full border-2 px-4 text-base font-semibold transition-colors ${
+                        ativo
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-background text-foreground hover:border-primary hover:bg-secondary"
+                      }`}
+                    >
+                      {c}
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-sm tabular-nums ${
+                          ativo ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        {n}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </section>
 
         {isLoading && (
