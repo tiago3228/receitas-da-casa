@@ -316,7 +316,15 @@ export function Lista() {
                         className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-soft transition hover:border-primary"
                       >
                         <Link to="/receitas/$id" params={{ id: r.id }} className="block h-full">
-                          <ImagemReceita src={r.imagem} alt={r.nome} />
+                          <ImagemReceita
+                            src={r.imagem}
+                            alt={r.imagemIlustrativa ? `Ilustração de ${r.nome}` : r.nome}
+                          />
+                          {r.imagemIlustrativa && (
+                            <p className="px-5 pt-3 text-sm text-muted-foreground">
+                              Imagem ilustrativa gerada por IA
+                            </p>
+                          )}
                           <div className="p-5 pr-16">
                             <p className="text-base text-muted-foreground">{r.categoria}</p>
                             <h2 className="mt-1 font-display text-xl font-semibold">{r.nome}</h2>

@@ -581,10 +581,28 @@ function Detalhe() {
             )}
             <ImagemReceita
               src={r.imagem}
-              alt={r.nome}
+              alt={r.imagemIlustrativa ? `Ilustração de ${r.nome}` : r.nome}
               loading="eager"
               className="mt-6 aspect-[4/3] max-h-[28rem] rounded-2xl shadow-soft"
             />
+            {r.imagemIlustrativa && (
+              <p className="mt-2 text-sm text-muted-foreground">
+                Imagem ilustrativa gerada por IA.
+              </p>
+            )}
+            {r.fonte && (
+              <p className="mt-2 text-sm text-muted-foreground">
+                Fonte da receita:{" "}
+                <a
+                  href={r.fonte.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline underline-offset-4 hover:text-primary"
+                >
+                  {r.fonte.titulo}
+                </a>
+              </p>
+            )}
 
             {ingredientes.length > 0 && (
               <section

@@ -1,19 +1,19 @@
 # Auditoria técnica do Saborê
 
-**Escopo:** auditoria e evolução do repositório `tiago3228/receitas-da-casa`, preservando a arquitetura TanStack Start/React/Supabase. A validação do banco remoto e do deploy Lovable não foi simulada.
+**Escopo:** auditoria e evolução do repositório `tiago3228/receitas-da-casa`, preservando a arquitetura TanStack Start/React/Supabase. A validação do banco remoto e do deploy Lovable não foi simulada. A extensão posterior do catálogo, de 530 para 536 receitas, está registrada ao final.
 
 ## A. Problemas encontrados
 
-| Gravidade | Área | Problema e consequência |
-|---|---|---|
-| Alta, condicionada à publicação de segredo | Configuração Git | `.env` aparecia em 22 versões do histórico do repositório público. A inspeção encontrou somente nomes de variáveis de URL, id e chaves publishable do Supabase; nenhum nome ou padrão de credencial privilegiada foi identificado. A exposição de uma publishable key é prevista para uso público, mas arquivos de ambiente locais não devem continuar versionados. |
-| Alta, depende do ambiente remoto | Supabase/RLS | As migrations versionadas definem isolamento por `auth.uid()`, mas não houve conexão ao banco remoto nesta sessão. Não é possível afirmar que as migrations foram aplicadas ou que as políticas estão ativas no projeto do Lovable. |
-| Média | Catálogo | Havia nove classificações culinárias incompatíveis com o conteúdo e quatro registros confirmados como cópias consolidadas com sufixos/variações de ids. Paella vegetariana, por exemplo, estava em doces. |
-| Média | Busca | A busca tratava várias palavras como uma única frase contígua; termos presentes em partes diferentes do título/texto podiam não encontrar a receita. |
-| Média | Receitas pessoais | Existiam operações para criar, listar e remover, mas faltava editar uma receita própria. O delete já pedia confirmação; foram reforçados os bloqueios a clique repetido. |
-| Média | Acessibilidade/preparo | O leitor lia apenas o preparo, não título e ingredientes. O temporizador não tinha pausa/retomada/reinício. O catálogo não oferecia ajuste de porções conservador. |
-| Baixa | Imagens | 397 das 530 receitas permanecem sem imagem. Associar imagens sem evidência poderia vincular uma foto à receita errada. |
-| Baixa | Qualidade global | `pnpm lint` do repositório inteiro encontra problemas preexistentes em arquivos não alterados e gerados; por isso o resultado global é diferente do lint direcionado aos arquivos desta entrega. |
+| Gravidade                                  | Área                   | Problema e consequência                                                                                                                                                                                                                                                                                                                                             |
+| ------------------------------------------ | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Alta, condicionada à publicação de segredo | Configuração Git       | `.env` aparecia em 22 versões do histórico do repositório público. A inspeção encontrou somente nomes de variáveis de URL, id e chaves publishable do Supabase; nenhum nome ou padrão de credencial privilegiada foi identificado. A exposição de uma publishable key é prevista para uso público, mas arquivos de ambiente locais não devem continuar versionados. |
+| Alta, depende do ambiente remoto           | Supabase/RLS           | As migrations versionadas definem isolamento por `auth.uid()`, mas não houve conexão ao banco remoto nesta sessão. Não é possível afirmar que as migrations foram aplicadas ou que as políticas estão ativas no projeto do Lovable.                                                                                                                                 |
+| Média                                      | Catálogo               | Havia nove classificações culinárias incompatíveis com o conteúdo e quatro registros confirmados como cópias consolidadas com sufixos/variações de ids. Paella vegetariana, por exemplo, estava em doces.                                                                                                                                                           |
+| Média                                      | Busca                  | A busca tratava várias palavras como uma única frase contígua; termos presentes em partes diferentes do título/texto podiam não encontrar a receita.                                                                                                                                                                                                                |
+| Média                                      | Receitas pessoais      | Existiam operações para criar, listar e remover, mas faltava editar uma receita própria. O delete já pedia confirmação; foram reforçados os bloqueios a clique repetido.                                                                                                                                                                                            |
+| Média                                      | Acessibilidade/preparo | O leitor lia apenas o preparo, não título e ingredientes. O temporizador não tinha pausa/retomada/reinício. O catálogo não oferecia ajuste de porções conservador.                                                                                                                                                                                                  |
+| Baixa                                      | Imagens                | 397 das 530 receitas permanecem sem imagem. Associar imagens sem evidência poderia vincular uma foto à receita errada.                                                                                                                                                                                                                                              |
+| Baixa                                      | Qualidade global       | `pnpm lint` do repositório inteiro encontra problemas preexistentes em arquivos não alterados e gerados; por isso o resultado global é diferente do lint direcionado aos arquivos desta entrega.                                                                                                                                                                    |
 
 ## B. Correções realizadas
 
@@ -37,12 +37,12 @@
 ## D. Catálogo de receitas
 
 - **Quantidade inicial:** 534 registros.
-- **Quantidade final:** 530 registros.
+- **Quantidade após consolidação inicial:** 530 registros.
 - **Categorias corrigidas (9):** Arroz Crocante (Carnes → Arroz/feijão/acompanhamentos); Batida de café, Detox suco rosa e Sucos pós ressaca (categorias diversas → Bebidas); Macarrão ao camarão com laranja, Pão de alho, Pão de queijo e Panetone tradicional (Doces ou Arroz → Pães/massas/panificação); Paella vegetariana (Doces → Arroz/feijão/acompanhamentos).
 - **Cópias consolidadas (4):** Berinjela à parmegiana II → Berinjela à parmegiana; Bolo de cenoura com ganache meio amargo II → versão sem sufixo; Mousse royal de chocolate → Musse royal de chocolate; Pudim de pão da vó Luiza → Pudim de pão da vó Luisa. Os ids removidos foram mantidos como aliases dos registros canônicos.
 - **Títulos parecidos remanescentes:** cinco grupos de mesmo título normalizado foram mantidos; não foram removidos automaticamente porque as entradas não foram consideradas cópias seguras.
-- **Imagens:** 133 receitas têm imagem; 397 não têm. Nenhuma imagem nova ou URL foi inventada. O fallback é aplicado quando a imagem está ausente ou falha.
-- **Validações:** o schema Zod verificou os 530 registros, ids, categorias, campos exigidos, aliases e esquema de imagem. Nenhum registro ficou sem nome ou texto. Também foram executados testes de busca multi-termo sem acentos, filtros e estado sem resultados.
+- **Imagens após consolidação inicial:** 133 receitas tinham imagem; 397 não tinham. O fallback é aplicado quando a imagem está ausente ou falha.
+- **Validações iniciais:** o schema Zod verificou os 530 registros, ids, categorias, campos exigidos, aliases e esquema de imagem. Nenhum registro ficou sem nome ou texto. Também foram executados testes de busca multi-termo sem acentos, filtros e estado sem resultados.
 
 ## E. Segurança
 
@@ -54,14 +54,14 @@
 
 ## F. Testes e verificações
 
-| Comando | Resultado observado |
-|---|---|
-| `pnpm test` | Passou: 10 arquivos de teste, 42 testes. |
-| `pnpm exec tsc --noEmit` | Passou sem erros. |
-| ESLint direcionado aos arquivos TypeScript alterados, exceto tipos Supabase gerados | Passou em 26 arquivos. |
-| `pnpm run build` | Build de produção concluído; o comando de deploy/preview foi disponibilizado pelo Nitro. |
-| `git diff --check` | Passou sem whitespace inválido. |
-| `pnpm lint` | **Falhou no lint global:** 293 problemas (287 erros e 6 avisos), em módulos preexistentes/gerados e arquivos não alterados, incluindo regras Prettier em código legado e avisos de Fast Refresh em componentes UI. Os arquivos TypeScript modificados passaram no lint direcionado. |
+| Comando                                                                             | Resultado observado                                                                                                                                                                                                                                                                 |
+| ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm test`                                                                         | Passou: 10 arquivos de teste, 42 testes.                                                                                                                                                                                                                                            |
+| `pnpm exec tsc --noEmit`                                                            | Passou sem erros.                                                                                                                                                                                                                                                                   |
+| ESLint direcionado aos arquivos TypeScript alterados, exceto tipos Supabase gerados | Passou em 26 arquivos.                                                                                                                                                                                                                                                              |
+| `pnpm run build`                                                                    | Build de produção concluído; o comando de deploy/preview foi disponibilizado pelo Nitro.                                                                                                                                                                                            |
+| `git diff --check`                                                                  | Passou sem whitespace inválido.                                                                                                                                                                                                                                                     |
+| `pnpm lint`                                                                         | **Falhou no lint global:** 293 problemas (287 erros e 6 avisos), em módulos preexistentes/gerados e arquivos não alterados, incluindo regras Prettier em código legado e avisos de Fast Refresh em componentes UI. Os arquivos TypeScript modificados passaram no lint direcionado. |
 
 Os testes exibem avisos de depreciação Node (`punycode`) durante a execução; eles não causaram falha.
 
@@ -71,7 +71,7 @@ Os testes exibem avisos de depreciação Node (`punycode`) durante a execução;
 2. Verificar policies e RLS no banco remoto e testar operações com duas contas diferentes. Sem acesso remoto, não foi possível confirmar a aplicação da migration.
 3. Fazer smoke test autenticado no deploy conectado: cadastro/login, recuperação de senha, gateway de IA, favoritos, lista de compras e edição/exclusão de receitas.
 4. Testar voz, controles de volume/velocidade e temporizadores nos navegadores/dispositivos alvo; a disponibilidade de vozes depende do sistema.
-5. Avaliar imagens para as 397 receitas restantes somente quando for possível provar que cada foto corresponde à receita e respeita direitos/licenças.
+5. Avaliar imagens para as receitas restantes somente quando for possível provar que cada foto corresponde à receita e respeita direitos/licenças.
 6. O lint global continua com problemas legados; a correção integral exigiria alterações fora do escopo desta entrega e reformataria arquivos gerados/UI não relacionados.
 
 ## H. Próximos passos necessários
@@ -79,3 +79,9 @@ Os testes exibem avisos de depreciação Node (`punycode`) durante a execução;
 - Validar e aplicar o SQL no projeto Lovable/Supabase.
 - Depois da aplicação, confirmar a persistência usando duas contas distintas e realizar smoke test no app publicado.
 - Tratar separadamente os problemas preexistentes de `pnpm lint` global, se o objetivo for exigir lint limpo para todo o repositório.
+
+## Atualização — seis novas receitas
+
+O catálogo foi ampliado para **536 receitas** com moqueca baiana, baião de dois, cuscuz paulista, bolo de fubá cremoso, barreado e quentão. As entradas têm campos de origem (`fonte`) e textos reescritos com quantidades e rendimentos conferidos nas fontes. As fontes e imagens de cada item estão relacionadas em [receitas-adicionadas.md](receitas-adicionadas.md), e a página de detalhe oferece o link à publicação original.
+
+Cada item usa uma imagem ilustrativa original gerada por IA, em JPEG local. A interface identifica essas imagens como ilustrativas. Nenhuma foto de terceiros sem licença de reutilização verificada foi incluída. Para adicionar fotos reais, será necessária licença compatível e atribuição confirmada.

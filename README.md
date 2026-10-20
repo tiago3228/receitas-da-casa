@@ -30,12 +30,13 @@ As tabelas de receitas pessoais e perfis estão descritas em `drizzle/migrations
 - Ajuste derivado de porções quando o rendimento e as quantidades forem inequívocos; o texto original permanece intacto.
 - Receitas pessoais com criação, edição e exclusão confirmada.
 - Imagens com fallback acessível quando ausentes ou indisponíveis.
+- Seis receitas regionais novas com origem editorial indicada e imagens ilustrativas próprias geradas por IA.
 
 As rotas privadas exigem autenticação. Se o usuário não estiver conectado, os controles de favoritos/lista encaminham para login. O detalhe público de uma receita abre em `/receitas/$id`; a edição de receita pessoal é iniciada pela ação “Editar” em “Minhas receitas”.
 
 ## Catálogo
 
-O catálogo atual contém 530 receitas. A validação de `src/lib/catalogo.ts` confere campos, categorias, ids, aliases e URLs de imagem. Receitas sem imagem permanecem sem associação inventada e usam o componente `ImagemReceita` como fallback.
+O catálogo atual contém 536 receitas. A validação de `src/lib/catalogo.ts` confere campos, categorias, ids, aliases, fontes e URLs de imagem. As imagens geradas para as seis receitas novas são identificadas como ilustrativas na listagem e no detalhe; a página de cada receita também apresenta um link para a fonte culinária. As demais receitas sem imagem usam o componente `ImagemReceita` como fallback.
 
 ## Verificações
 

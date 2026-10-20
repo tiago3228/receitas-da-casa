@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
@@ -8,6 +8,7 @@ import {
   gruposDeTitulosDuplicados,
   validarCatalogo,
 } from "@/lib/catalogo";
+import { extrairEtapas, extrairIngredientes, extrairModoDePreparo } from "@/lib/receita-texto";
 
 const json: unknown = JSON.parse(
   readFileSync(resolve(process.cwd(), "public/receitas.json"), "utf8"),
@@ -16,7 +17,7 @@ const catalogo = validarCatalogo(json);
 
 describe("integridade do catálogo", () => {
   it("valida todos os registros reais, categorias e ids únicos", () => {
-    expect(catalogo).toHaveLength(530);
+    expect(catalogo).toHaveLength(536);
     expect(new Set(catalogo.map((receita) => receita.id)).size).toBe(catalogo.length);
     expect(CatalogoReceitasSchema.safeParse(json).success).toBe(true);
   });
@@ -57,6 +58,31 @@ describe("integridade do catálogo", () => {
     expect(filtrarReceitas(catalogo, "termo-sem-correspondencia-xyz", "Todas")).toEqual([]);
   });
 
+  it("mantém as seis receitas novas com fonte, ilustração marcada e arquivo local existente", () => {
+    const ids = [
+      "moqueca-baiana",
+      "baiao-de-dois-nordestino",
+      "cuscuz-paulista-pratico",
+      "bolo-fuba-cremoso",
+      "barreado-paranaense",
+      "quentao-tradicional",
+    ];
+    for (const id of ids) {
+      const receita = catalogo.find((item) => item.id === id);
+      expect(receita?.fonte?.url).toMatch(/^https:\/\//);
+      expect(receita?.imagemIlustrativa).toBe(true);
+      expect(receita?.imagem).toMatch(/^\/images\/receitas\/.+\.jpg$/);
+      if (typeof receita?.imagem === "string") {
+        expect(existsSync(resolve(process.cwd(), "public", receita.imagem.slice(1)))).toBe(true);
+      }
+      expect(extrairIngredientes(receita?.texto ?? "").length).toBeGreaterThanOrEqual(5);
+      expect(extrairModoDePreparo(receita?.texto ?? "")).not.toBe("");
+      expect(
+        extrairEtapas(extrairModoDePreparo(receita?.texto ?? "")).length,
+      ).toBeGreaterThanOrEqual(3);
+    }
+  });
+
   it("rejeita categoria inválida, identificador repetido e esquema de imagem inseguro", () => {
     const base = {
       id: "receita-teste",
@@ -80,6 +106,11 @@ describe("integridade do catálogo", () => {
     ).toBe(false);
     expect(
       CatalogoReceitasSchema.safeParse([{ ...base, imagem: "//exemplo.test/imagem.png" }]).success,
+    ).toBe(false);
+    expect(
+      CatalogoReceitasSchema.safeParse([
+        { ...base, fonte: { titulo: "Link inseguro", url: "javascript:alert(1)" } },
+      ]).success,
     ).toBe(false);
   });
 });

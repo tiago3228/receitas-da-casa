@@ -41,6 +41,17 @@ export const ReceitaCatalogoSchema = z.object({
   texto: z.string().trim().min(1).max(100_000),
   aliases: z.array(z.string().trim().min(1).max(200)).optional(),
   nomesAlternativos: z.array(z.string().trim().min(1).max(300)).optional(),
+  fonte: z
+    .object({
+      titulo: z.string().trim().min(1).max(300),
+      url: z
+        .string()
+        .url()
+        .max(2048)
+        .refine((url) => url.startsWith("https://"), "A fonte precisa usar HTTPS."),
+    })
+    .optional(),
+  imagemIlustrativa: z.boolean().optional(),
 });
 
 export type ReceitaCatalogo = z.infer<typeof ReceitaCatalogoSchema>;
