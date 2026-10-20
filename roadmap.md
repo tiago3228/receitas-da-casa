@@ -14,7 +14,7 @@
 - [x] Preparo por etapas; temporizador apenas para duração explícita, com iniciar, pausar, retomar e reiniciar.
 - [x] Ajuste de porções somente quando o rendimento é inteiro e explícito; conversões incertas, faixas e quantidades qualitativas permanecem sem alteração. O texto original não é modificado.
 - [x] Receitas pessoais com criação, listagem, edição e remoção com confirmação, validação, autenticação server-side e escopo do proprietário.
-- [x] `.env` removido do índice atual do Git, ignorado localmente, e `.env.example` seguro adicionado.
+- [x] `.env` remoto conferido sem revelar valores: contém somente URL, id do projeto e chave publishable públicos do Supabase, duplicados em nomes server/Vite; mantido versionado por decisão confirmada do proprietário. `.env.example` usa placeholders.
 - [x] README atualizado com configuração, SQL e comandos de desenvolvimento.
 
 ## Pendências de validação externa/manual

@@ -10,11 +10,10 @@ Requisitos: Node.js e pnpm.
 git clone https://github.com/tiago3228/receitas-da-casa.git
 cd receitas-da-casa
 pnpm install
-cp .env.example .env
 pnpm dev
 ```
 
-Preencha `.env` com os valores do projeto Supabase conectado. O navegador usa apenas URL e chave **publishable**. Nunca adicione `service_role`, `sb_secret_*`, senha de banco ou outro segredo a `.env`. O `.env` fica versionado de propósito: a publicação precisa das variáveis `VITE_*` dele; sem elas o app abre em branco com "Missing Supabase environment variable(s)".
+O `.env` já é versionado com URL, id do projeto e chave **publishable** do Supabase, todos valores públicos e sem privilégios administrativos. O arquivo `.env.example` contém placeholders para referência; não o copie sobre o `.env` conectado. Nunca adicione `service_role`, `sb_secret_*`, senha de banco ou outro segredo ao `.env` nem a variáveis `VITE_*`. Para usar outro projeto Supabase, substitua os valores localmente com os correspondentes públicos e configure as variáveis de publicação no projeto Lovable.
 
 ## Banco de dados e SQL
 
