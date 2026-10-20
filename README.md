@@ -14,7 +14,7 @@ cp .env.example .env
 pnpm dev
 ```
 
-Preencha `.env` com os valores do projeto Supabase conectado. O navegador usa apenas URL e chave **publishable**. Nunca adicione `service_role`, `sb_secret_*`, senha de banco ou outro segredo a variáveis `VITE_*`. Arquivos `.env` locais são ignorados pelo Git; `.env.example` contém somente placeholders.
+Preencha `.env` com os valores do projeto Supabase conectado. O navegador usa apenas URL e chave **publishable**. Nunca adicione `service_role`, `sb_secret_*`, senha de banco ou outro segredo a `.env`. O `.env` fica versionado de propósito: a publicação precisa das variáveis `VITE_*` dele; sem elas o app abre em branco com "Missing Supabase environment variable(s)".
 
 ## Banco de dados e SQL
 
