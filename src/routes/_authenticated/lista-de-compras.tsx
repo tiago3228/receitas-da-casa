@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Check, Circle, Loader2, Plus, ShoppingBasket, Trash2 } from "lucide-react";
 import { Cabecalho } from "@/components/Cabecalho";
+import { ReceitasRecomendadas } from "@/components/ReceitasRecomendadas";
 import { useListaCompras } from "@/lib/dados-pessoais";
 
 export const Route = createFileRoute("/_authenticated/lista-de-compras")({
@@ -225,6 +226,7 @@ function ListaDeCompras() {
             )}
           </>
         )}
+        {!carregando && !erro && <ReceitasRecomendadas itens={itens} />}
       </main>
     </div>
   );

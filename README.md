@@ -24,6 +24,7 @@ As tabelas de receitas pessoais e perfis estão descritas em `drizzle/migrations
 - Catálogo de receitas com busca por nome e texto, filtros de categorias, paginação e tela de detalhe.
 - Favoritos e lista de compras persistidos por usuário no Supabase.
 - Ingredientes interativos para marcar o que já existe em casa.
+- Recomendações de receitas ordenadas pelos ingredientes disponíveis já marcados, com indicação de cobertura e ligação direta para o detalhe.
 - Leitura em voz alta em português brasileiro, com pausa/retomada, interrupção e controles de velocidade e volume nos navegadores compatíveis.
 - Preparo por etapas e temporizador para durações explícitas do texto.
 - Ajuste derivado de porções quando o rendimento e as quantidades forem inequívocos; o texto original permanece intacto.

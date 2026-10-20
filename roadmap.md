@@ -8,6 +8,7 @@
 - [x] Corrigidas nove classificações, incluindo Paella vegetariana, bebidas, pães e acompanhamentos.
 - [x] Consolidadas quatro cópias confirmadas, preservando os ids antigos como aliases para links e favoritos existentes.
 - [x] Busca normalizada por acentos/maiúsculas, filtros e estados vazios/erro.
+- [x] Recomendações derivadas dos ingredientes marcados como disponíveis na lista de compras, ordenadas pela cobertura, com percentuais e acesso ao detalhe; sem nova migration ou escrita no banco.
 - [x] Imagens com carregamento consistente e fallback acessível; as seis ilustrações geradas são diferenciadas de fotografias de origem externa.
 - [x] Favoritos e lista de compras por usuário; favoritos usam atualização otimista com rollback, e as operações privadas são filtradas pelo id do usuário.
 - [x] Leitura em voz do título, ingredientes e preparo, com velocidade, volume, pausa/retomada e interrupção quando suportados.
