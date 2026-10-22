@@ -1,0 +1,13 @@
+{
+  "routes": [
+    { "path": "/", "title": "Sugestões de receitas" },
+    { "path": "/auth", "title": "Entrar" },
+    { "path": "/reset-password", "title": "Redefinir senha" },
+    { "path": "/favoritos", "title": "Favoritos" },
+    { "path": "/lista-de-compras", "title": "Lista de compras" },
+    { "path": "/minhas-receitas", "title": "Minhas receitas" },
+    { "path": "/nova-receita", "title": "Nova receita" },
+    { "path": "/receitas", "title": "Receitas" },
+    { "path": "/receitas/:id", "title": "Detalhe da receita" }
+  ]
+}

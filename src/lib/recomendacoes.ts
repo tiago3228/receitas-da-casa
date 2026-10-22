@@ -1,6 +1,7 @@
 import type { ItemListaCompras } from "@/lib/dados-pessoais";
-import { normalizar, type ReceitaCatalogo } from "@/lib/catalogo";
+import { normalizar, type CategoriaReceita, type ReceitaCatalogo } from "@/lib/catalogo";
 import { extrairIngredientes } from "@/lib/receita-texto";
+import { extrairTempoPreparo, type FaixaTempoPreparo } from "@/lib/tempo-preparo";
 
 const PALAVRAS_IGNORADAS = new Set([
   "a",
@@ -163,6 +164,24 @@ const ALIASES_INGREDIENTES: Record<string, string> = {
   salsinha: "salsa",
 };
 
+const CATEGORIAS_SOBREMESA = new Set<CategoriaReceita>([
+  "Bolos, tortas doces e cupcakes",
+  "Doces, sobremesas e doces de festa",
+  "Biscoitos e bolachas",
+]);
+
+const SINAIS_RECEITA_SALGADA =
+  /\b(?:salgad[oa]s?|frango|galinha|carne|queijo|bacon|presunto|linguica|calabresa|atum|sardinha|bacalhau|peixe|camarao|legumes|quiche|pizza|empada|esfiha|polvilho)\b/;
+const SINAIS_NOME_SOBREMESA =
+  /\b(?:bolo|torta|pudim|mousse|brigadeiro|doce|sobremesa|biscoito|bolacha|brownie|chocolate|pave|rocambole|cupcake|cookie|cheesecake|sorvete|panqueca doce)\b/;
+
+const INGREDIENTE_ANIMAL =
+  /\b(?:carne|frango|galinha|pato|peru|bacon|presunto|linguica|calabresa|salame|mortadela|salsicha|costela|picanha|alcatra|patinho|maminha|cupim|figado|peixe|atum|sardinha|salmao|bacalhau|tilapia|camarao|siri|caranguejo|lagosta|marisco|ostra|mexilhao|polvo|lula|anchova|gelatina)\b/;
+
+export type CategoriaFiltroRecomendacao = "todas" | "vegetariana" | "sobremesa" | CategoriaReceita;
+
+export type TempoFiltroRecomendacao = "qualquer" | number;
+
 export type RecomendacaoReceita = {
   receita: ReceitaCatalogo;
   ingredientesDisponiveis: number;
@@ -170,7 +189,26 @@ export type RecomendacaoReceita = {
   percentualDisponivel: number;
   nomesDisponiveis: string[];
   nomesFaltando: string[];
+  vegetariana: boolean;
+  tempoPreparo: FaixaTempoPreparo | undefined;
 };
+
+function ehVegetariana(receita: ReceitaCatalogo, ingredientes: string[]): boolean {
+  const texto = normalizar(`${receita.nome} ${ingredientes.join(" ")}`)
+    .replace(
+      /\b(?:carne\s+(?:de\s+)?(?:soja|jaca|vegetal)|proteina(?:\s+texturizada)?\s+de\s+soja)\b/g,
+      " ",
+    )
+    .replace(/\bgelatina\s+vegetal\b/g, " ");
+  return !INGREDIENTE_ANIMAL.test(texto);
+}
+
+function ehSobremesa(receita: ReceitaCatalogo, ingredientes: string[]): boolean {
+  const contexto = normalizar(`${receita.nome} ${ingredientes.join(" ")}`);
+  if (SINAIS_RECEITA_SALGADA.test(contexto)) return false;
+  if (CATEGORIAS_SOBREMESA.has(receita.categoria)) return true;
+  return SINAIS_NOME_SOBREMESA.test(normalizar(receita.nome));
+}
 
 function normalizarNomeIngrediente(texto: string): string[] {
   const preparado = normalizar(texto)
@@ -218,12 +256,13 @@ export function recomendarReceitas(
   itens: Pick<ItemListaCompras, "ingrediente" | "ja_tem">[],
   limite = 6,
 ): RecomendacaoReceita[] {
+  if (!Number.isFinite(limite) || limite <= 0) return [];
   const disponiveis = new Set(
     itens
       .filter((item) => item.ja_tem)
       .flatMap((item) => normalizarNomeIngrediente(item.ingrediente)),
   );
-  if (disponiveis.size === 0 || limite <= 0) return [];
+  if (disponiveis.size === 0) return [];
 
   return receitas
     .flatMap((receita) => {
@@ -236,7 +275,6 @@ export function recomendarReceitas(
 
       const chavesDisponiveis = todasAsChaves.filter((chave) => disponiveis.has(chave));
       if (chavesDisponiveis.length === 0) return [];
-      const chavesFaltando = new Set(todasAsChaves.filter((chave) => !disponiveis.has(chave)));
       const nomesDisponiveis = [
         ...new Set(
           linhas
@@ -266,6 +304,11 @@ export function recomendarReceitas(
           percentualDisponivel,
           nomesDisponiveis,
           nomesFaltando: nomesFaltando.slice(0, 4),
+          vegetariana: ehVegetariana(
+            receita,
+            linhas.map((linha) => linha.nome),
+          ),
+          tempoPreparo: extrairTempoPreparo(receita.texto),
         },
       ];
     })
@@ -277,4 +320,42 @@ export function recomendarReceitas(
         a.receita.nome.localeCompare(b.receita.nome, "pt-BR"),
     )
     .slice(0, Math.floor(limite));
+}
+
+export function filtrarRecomendacoes(
+  recomendacoes: RecomendacaoReceita[],
+  categoria: CategoriaFiltroRecomendacao,
+  tempoMaximoMinutos: TempoFiltroRecomendacao,
+): RecomendacaoReceita[] {
+  if (
+    tempoMaximoMinutos !== "qualquer" &&
+    (!Number.isFinite(tempoMaximoMinutos) || tempoMaximoMinutos < 0)
+  ) {
+    return [];
+  }
+
+  return recomendacoes.filter((recomendacao) => {
+    const receita = recomendacao.receita;
+    if (categoria === "vegetariana" && !recomendacao.vegetariana) return false;
+    if (
+      categoria === "sobremesa" &&
+      !ehSobremesa(receita, recomendacao.nomesFaltando.concat(recomendacao.nomesDisponiveis))
+    ) {
+      return false;
+    }
+    if (
+      categoria !== "todas" &&
+      categoria !== "vegetariana" &&
+      categoria !== "sobremesa" &&
+      receita.categoria !== categoria
+    ) {
+      return false;
+    }
+
+    if (tempoMaximoMinutos !== "qualquer") {
+      const maximo = recomendacao.tempoPreparo?.maximoMinutos;
+      if (maximo === undefined || maximo > tempoMaximoMinutos) return false;
+    }
+    return true;
+  });
 }
