@@ -34,6 +34,21 @@ function mostrarTopo(receitas: unknown[]) {
     "fetch",
     vi.fn(async () => ({ ok: true, json: async () => receitas })),
   );
+  // jsdom não implementa matchMedia: diz que o usuário prefere movimento reduzido
+  // para o contador do topo assumir o total na hora, sem animação de rAF.
+  vi.stubGlobal(
+    "matchMedia",
+    vi.fn((query: string) => ({
+      matches: query.includes("prefers-reduced-motion: reduce"),
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  );
   const router = createRouter({ routeTree, context: { queryClient } });
 
   render(
